@@ -40,3 +40,15 @@ struct DSU {
         return sz[find_root(x)];
     }
 };
+vector<int> nxt(n + 2);
+
+for (int i = 1; i <= n + 1; i++)
+    nxt[i] = i;
+
+int get(int x) {
+    if (nxt[x] == x) return x;
+    return nxt[x] = get(nxt[x]);
+}
+ if (res[p] == v[p]) {
+                    nxt[p] = get(p + 1);
+ }
