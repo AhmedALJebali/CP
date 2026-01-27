@@ -10,11 +10,11 @@
             }
         }
 
-        // Detect & propagate negative cycles
-        for (int i = 0; i < n; i++) {
-            for (auto &[u, v, w]: edges) {
-                if (dis[u] != INF && dis[u] + w < dis[v]) {
-                    dis[v] = -INF;
-                }
-            }
+// Detect & propagate negative cycles
+for (int i = 0; i < n; i++) {
+    for (auto &[u, v, w]: edges) {
+        if (dis[u] != INF && dis[u] + w < dis[v]) {
+            dis[v] = -INF;
         }
+    }
+}
