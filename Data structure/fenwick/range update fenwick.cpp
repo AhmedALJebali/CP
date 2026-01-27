@@ -1,27 +1,45 @@
-struct BitRange{
-    //expected from user to deal with zero base
-    int N;
-    vector<int>m,c;
-    void init(int x){
-        N=x;
-        m.resize(N),c.resize(N);
+template <typename T, bool one_based = true>
+struct FenwickRange {
+    int n;
+    vector<T> bit1, bit2;
+
+    FenwickRange(int n) {
+        this->n = n + 1;
+        bit1.assign(n + 1, T());
+        bit2.assign(n + 1, T());
     }
-    void add(int pos,int mVal,int cVal){
-        for(++pos;pos<=N;pos+=pos&-pos){
-            m[pos-1]+=mVal;
-            c[pos-1]+=cVal;
-        }
+
+    // internal point update
+    void update(vector<T>& bit, int idx, T val) {
+        for (idx += (!one_based); idx < n; idx += idx & -idx)
+            bit[idx] += val;
     }
-    int get(int pos){
-        int ret=0;
-        int x=pos;
-        for(pos++;pos;pos-=pos&-pos){
-            ret+=m[pos-1]*x+c[pos-1];
-        }
-        return ret;
+
+    // internal prefix sum
+    T query(const vector<T>& bit, int idx) const {
+        T res = T();
+        for (idx += (!one_based); idx > 0; idx -= idx & -idx)
+            res += bit[idx];
+        return res;
     }
-    void addRange(int l,int r,int value){
-        add(l,value,-value*(l-1));
-        add(r+1,-value,value*r);
+
+    // add val to range [l, r]
+    void update_range(int l, int r, T val) {
+        update(bit1, l, val);
+        update(bit1, r + 1, -val);
+
+        update(bit2, l, val * (l - one_based));
+        update(bit2, r + 1, -val * r);
+    }
+
+    // prefix sum [1 .. idx]
+    T prefix_sum(int idx) const {
+        return query(bit1, idx) * idx - query(bit2, idx);
+    }
+
+    // range sum [l .. r]
+    T range_query(int l, int r) const {
+        if (l > r) return T();
+        return prefix_sum(r) - prefix_sum(l - 1);
     }
 };
