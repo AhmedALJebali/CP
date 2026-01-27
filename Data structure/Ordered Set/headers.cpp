@@ -3,7 +3,6 @@
 #include <ext/pb_ds/tree_policy.hpp>
 
 using namespace std;
-typedef long long ll;
 
 using namespace __gnu_pbds;
 template<typename T>
