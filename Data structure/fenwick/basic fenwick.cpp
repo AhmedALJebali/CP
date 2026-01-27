@@ -1,35 +1,71 @@
-template<class T>
-struct Fenwick{
-    int log2_floor(long long i) {return i ? __builtin_clzll(1) - __builtin_clzll(i) : 0;}
+template <typename T, bool one_based = true>
+struct FenwickTree {
+    vector<T> bit;
     int n;
-    vector<T>tree;
-    int N = 1;
-    void init(int _n){
-        n=_n;
-        tree.resize(this->n);
-        N = log2_floor(n) + 1;
+
+    FenwickTree(int n) {
+        this->n = n + 1;
+        bit.assign(n + 1, T());
     }
-    void add(int pos,T value){
-        for(int i=pos+1;i<=n;i+=i&-i)tree[i-1]+=value;
+
+    FenwickTree(const vector<T>& a) : FenwickTree(a.size()) {
+        for (int i = 0; i < (int)a.size(); i++)
+            update(i + one_based, a[i]);
     }
-    T get(int pos) {
-        T sum = 0;
-        for (int i = pos + 1; i; i -= i & -i)sum += tree[i - 1];
-        return sum;
+
+    // prefix query [1 .. idx]
+    T query(int idx) const {
+        T ret = T();
+        for (idx += (!one_based); idx > 0; idx -= idx & -idx)
+            ret += bit[idx];
+        return ret;
     }
-    T query(int l,int r){
-        return get(r)-get(l-1);//send zero base
+
+    // range query [l .. r]
+    T query(int l, int r) const {
+        if (l > r) return T();
+        return query(r) - (l - 1 >= 0 ? query(l - 1) : T());
     }
-    int lower_bound(T t){
-        T sum = 0;
-        int pos = 0;
-        for(int i = N; i >= 0; i--){
-            int next_pos = pos + (1 << i);
-            if(next_pos <= n && sum + tree[next_pos - 1] < t){
-                sum += tree[next_pos - 1];
-                pos = next_pos;
+
+    // point update
+    void update(int idx, T delta) {
+        for (idx += (!one_based); idx < n; idx += idx & -idx)
+            bit[idx] += delta;
+    }
+
+    // range update (difference array trick)
+    void update_range(int l, int r, T val) {
+        update(l, val);
+        update(r + 1, -val);
+    }
+
+    // first index where prefix sum >= x
+    int lower_bound(T x) const {
+        int idx = 0;
+        int mask = 1;
+        while (mask < n) mask <<= 1;
+
+        for (mask >>= 1; mask > 0; mask >>= 1) {
+            if (idx + mask < n && bit[idx + mask] < x) {
+                x -= bit[idx + mask];
+                idx += mask;
             }
         }
-        return pos; // zero-based index
+        return idx + one_based;
+    }
+
+    // first index where prefix sum > x
+    int upper_bound(T x) const {
+        int idx = 0;
+        int mask = 1;
+        while (mask < n) mask <<= 1;
+
+        for (mask >>= 1; mask > 0; mask >>= 1) {
+            if (idx + mask < n && bit[idx + mask] <= x) {
+                x -= bit[idx + mask];
+                idx += mask;
+            }
+        }
+        return idx + one_based;
     }
 };
