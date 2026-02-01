@@ -1,4 +1,3 @@
-
 struct Node {
   int sum, lazy, is_lazy;
   Node() { sum = lazy = is_lazy = 0; }
@@ -88,4 +87,16 @@ struct Sagara {
   }
 
   Node get(int l, int r) { return get(l, r, 0, 0, sz); }
+
+  void init(int node, int lx,int rx, vector<int> &a) {
+    if (rx - lx == 1) {
+      if (lx < a.size())
+        segData[node] = Node(a[lx]);
+      return;
+    }
+    int mid = (lx + rx) / 2;
+    init(2 * node + 1, lx, mid, a);
+    init(2 * node + 2, mid, rx, a);
+    segData[node] = merge(segData[2 * node + 1], segData[2 * node + 2]);
+  }
 };
