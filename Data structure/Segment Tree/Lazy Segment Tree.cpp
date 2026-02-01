@@ -99,4 +99,8 @@ struct Sagara {
     init(2 * node + 2, mid, rx, a);
     segData[node] = merge(segData[2 * node + 1], segData[2 * node + 2]);
   }
+
+  void init(vector<int> &a) {
+    init(0, 0, sz, a);
+  }
 };
