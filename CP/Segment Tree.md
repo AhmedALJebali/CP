@@ -1,6 +1,4 @@
-
 ## Introduction
-
 A **Segment Tree** is a **powerful data structure** used to handle queries on arrays efficiently, especially when you have **frequent range queries** and **point updates**.
 
 **Example problem:**
