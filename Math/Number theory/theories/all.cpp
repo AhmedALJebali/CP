@@ -7,21 +7,52 @@ int gcd(int a, int b) {
 }
 
 int gcd_rec(int a, int b) {
-  return b ? gcd(b, a % b) : a;
+  return b ? gcd_rec(b, a % b) : a;
 }
 
 int lcm(int a,int b) {
   return (abs(a) / gcd(a, b)) * abs(b);
 }
 
+
+// Extended Euclidean Algorithm
 int ExtendedEuclid(int a, int b, int &x, int &y) {
-  if (!b) {
-    x = 1, y = 0;
+  if (b == 0) {
+    x = 1;
+    y = 0;
     return a;
   }
   int x1, y1;
   int g = ExtendedEuclid(b, a % b, x1, y1);
   x = y1;
-  y = x1 - y1 * (a / b);
+  y = x1 - (a / b) * y1;
   return g;
+}
+
+int ceil_div(int a, int b) {
+  if (b < 0) a = -a, b = -b;
+  if (a >= 0) return (a + b - 1) / b;
+  return a / b;
+}
+
+int floor_div(int a, int b) {
+  if (b < 0) a = -a, b = -b;
+  if (a >= 0) return a / b;
+  return -((-a + b - 1) / b);
+}
+
+int modInv(int a, int m) {
+  int x, y;
+  int g = ExtendedEuclid(a, m, x, y);
+  if (g != 1) return -1; // no inverse
+  return (x % m + m) % m;
+}
+// fast doubling Fibonacci
+pair<int,int> fib(int n) {
+  if (n == 0) return {0, 1};
+  auto p = fib(n >> 1);
+  int c = (1LL * p.first * ((2LL * p.second % MOD - p.first + MOD) % MOD)) % MOD;
+  int d = (1LL * p.first * p.first % MOD + 1LL * p.second * p.second % MOD) % MOD;
+  if (n & 1) return {d, (c + d) % MOD};
+  return {c, d};
 }

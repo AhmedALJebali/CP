@@ -7,5 +7,5 @@ int gcd(int a, int b) {
 }
 
 int gcd_rec(int a, int b) {
-  return b ? gcd(b, a % b) : a;
+  return b ? gcd_rec(b, a % b) : a;
 }

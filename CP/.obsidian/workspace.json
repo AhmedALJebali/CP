@@ -55,12 +55,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "math/Extended Euclidean Algorithm (EEA).md",
+                "file": "math/Fermat’s Little Theorem (FLT).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Extended Euclidean Algorithm (EEA)"
+              "title": "Fermat’s Little Theorem (FLT)"
             }
           }
         ],
@@ -228,11 +228,12 @@
   },
   "active": "b3f173d1f83badaf",
   "lastOpenFiles": [
+    "math/Extended Euclidean Algorithm (EEA).md",
+    "math/Fermat’s Little Theorem (FLT).md",
+    "math/Bézout's Theorem.md",
     "download.png",
     "math/Least Common Multiple (LCM).md",
     "math/Greatest Common Divisor (GCD).md",
-    "math/Extended Euclidean Algorithm (EEA).md",
-    "math/Bézout's Theorem.md",
     "math/Modular Multiplicative Inverse (MMI).md",
     "math",
     "counting/Grid Walking Combinatorics Editorial.md",
