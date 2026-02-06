@@ -110,36 +110,7 @@ $$C_n = \frac{1}{n+1} \binom{2n}{n}$$
 **Common Applications:**
 
 1. Number of valid parenthesis strings with $n$ pairs.
-    
 2. Number of ways to triangulate a polygon with $n+2$ sides.
-    
 3. Number of binary trees with $n$ nodes.
-    
 
 ---
-
-## 📊 Summary Table
-
-|**Identity**|**Best Used For...**|
-|---|---|
-|**Symmetry**|Reducing $k$ when $k > n/2$.|
-|**Pascal**|DP-based combinations when $N$ is small ($\approx 5000$).|
-|**Stars & Bars**|Distributing tasks, resources, or candy.|
-|**Vandermonde**|Simplifying sums involving two binomials.|
-|**PIE**|Problems with "at least one" or "none of" constraints.|
-|**Catalan**|Balanced structures and non-crossing paths.|
-
----
-
-## 💡 Implementation Checklist for CP
-
-- [ ] **Modular Inverse:** Use Fermat's Little Theorem $a^{M-2} \pmod M$ for prime $M$.
-    
-- [ ] **Precomputation:** Precompute `fact[]` and `invFact[]` in $O(N)$ time.
-    
-- [ ] **Corner Cases:** Always handle $n < k$ (return 0) and $k < 0$ (return 0).
-    
-- [ ] **Lucas Theorem:** If $n, k$ are huge but $M$ is a small prime, use Lucas Theorem.
-    
-
-Would you like me to generate a **template code for precomputing nCr** in C++ or Python to add to your notes?
