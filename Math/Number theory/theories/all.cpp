@@ -56,7 +56,7 @@ pair<int,int> fib(int n) {
   if (n & 1) return {d, (c + d) % MOD};
   return {c, d};
 }
-int fib(int n) {
+int Mfib(int n) {
     if (n == 0) return 0;
 
     const int MOD = 1e9 + 7;
