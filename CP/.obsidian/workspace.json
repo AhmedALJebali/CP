@@ -76,9 +76,21 @@
               "icon": "lucide-file",
               "title": "Fibonacci numbers"
             }
+          },
+          {
+            "id": "4618b3b82104479d",
+            "type": "leaf",
+            "state": {
+              "type": "pdf",
+              "state": {
+                "file": "CLRS.pdf"
+              },
+              "icon": "lucide-file-text",
+              "title": "CLRS"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -240,8 +252,12 @@
       "bases:Create new base": false
     }
   },
-  "active": "8cdc9e05538e8955",
+  "active": "4618b3b82104479d",
   "lastOpenFiles": [
+    "download.png",
+    "Data structure/Segment Tree.md",
+    "Data structure",
+    "CLRS.pdf",
     "counting/Binomial Coefficient Fundamentals.md",
     "math/Fibonacci numbers.md",
     "counting/Combinatorics Identities Editorial.md",
@@ -249,11 +265,9 @@
     "math/Fermat’s Little Theorem (FLT).md",
     "math/Extended Euclidean Algorithm (EEA).md",
     "math/Bézout's Theorem.md",
-    "download.png",
     "math/Least Common Multiple (LCM).md",
     "math/Greatest Common Divisor (GCD).md",
     "math/Modular Multiplicative Inverse (MMI).md",
-    "math",
-    "Segment Tree.md"
+    "math"
   ]
 }
