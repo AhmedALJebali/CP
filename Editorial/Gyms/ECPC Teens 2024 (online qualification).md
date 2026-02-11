@@ -18,7 +18,7 @@ https://codeforces.com/group/Rilx5irOux/contest/527020
 | **M**  |     **Batates and GCD**     |                 Lazy Segment Tree / Persistent                  |
 
 ---
-- ### ** Upsolve List**
+### **Checklist: Upsolve List**
 - [ ] **C** . Batates and Friendz
 - [ ] **D** . Batates and Subsequence
 - [ ] **E** . Batates and Football
