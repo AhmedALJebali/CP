@@ -109,27 +109,40 @@ In many problems, you are asked for $F_n \pmod m$. The sequence of Fibonacci num
 - $\pi(10) = 60$.
 - $\pi(m)$ always starts with $0, 1$.
 - Knowing the Pisano period allows you to reduce a massive $n$ using $F_n \pmod m = F_{n \pmod{\pi(m)}} \pmod m$.
-    
+---
+
+## The Tiling Interpretation (The most visual)
+
+The most common combinatorial interpretation of $F_{n+1}$ is the number of ways to tile a **$1 \times n$ board** using two types of tiles:
+
+- **Squares** ($1 \times 1$)
+- **Dominoes** ($1 \times 2$)
+### Why it works:
+
+To find the number of ways to tile a board of length $n$:
+
+1. If the last tile is a **square**, you must have tiled a board of length $n-1$ in $F_{n}$ ways.
+2. If the last tile is a **domino**, you must have tiled a board of length $n-2$ in $F_{n-1}$ ways.
+    This leads directly to the recurrence $F_{n+1} = F_n + F_{n-1}$.
 
 ---
 
-## 6. Summary Comparison
+## Compositions and "No-Consecutive" Problems
 
-| **Method**          | **Complexity** | **Best For**                     | **Exact?**            |
-| ------------------- | -------------- | -------------------------------- | --------------------- |
-| **Iterative (DP)**  | $O(n)$         | Small $n$ ($< 10^7$)             | Yes                   |
-| **Binet's Formula** | $O(1)$         | Approximation / Math proofs      | No (Precision issues) |
-| **Matrix Exp**      | $O(\log n)$    | Large $n$, arbitrary recurrences | Yes                   |
-| **Fast Doubling**   | $O(\log n)$    | Maximum speed in CP              | Yes                   |
+Fibonacci numbers naturally count restricted arrangements:
+
+- **No Consecutive 1s:** The number of binary strings of length $n$ that do **not** contain "11" is exactly $F_{n+2}$.
+- **Staircase Climbing:** If you can take 1 or 2 steps at a time, the number of ways to reach the $n$-th step is $F_{n+1}$.
+- **Subset Sums:** The number of subsets of $\{1, 2, \dots, n\}$ that do not contain any two consecutive integers is $F_{n+2}$.
 
 ---
 
-### Zeckendorf's Theorem (Bonus)
+## The Connection to Binomial Coefficients
 
-Every positive integer can be uniquely represented as a sum of **non-consecutive** Fibonacci numbers ($F_n$ where $n \geq 2$).
+Fibonacci numbers can be expressed as a "diagonal sum" of **Pascal’s Triangle**. This links the additive nature of Fibonacci back to the selection nature of Combinatorics:
 
-_Example:_ $100 = 89 + 8 + 3$.
+$$F_{n+1} = \sum_{k=0}^{\lfloor n/2 \rfloor} \binom{n-k}{k}$$
 
-This theorem is the basis for **Fibonacci Coding**, a universal code that represents integers into binary based on Fibonacci positions.
+> **The Insight:** This identity effectively says that to build a board of length $n$, you choose $k$ positions for dominoes out of the $n-k$ total tiles used.
 
-Would you like me to provide a Python implementation or dive deeper into the proof of the Pisano Period?
+-
