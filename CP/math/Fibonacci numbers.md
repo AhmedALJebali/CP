@@ -145,4 +145,3 @@ $$F_{n+1} = \sum_{k=0}^{\lfloor n/2 \rfloor} \binom{n-k}{k}$$
 
 > **The Insight:** This identity effectively says that to build a board of length $n$, you choose $k$ positions for dominoes out of the $n-k$ total tiles used.
 
--
