@@ -76,21 +76,9 @@
               "icon": "lucide-file",
               "title": "Fibonacci numbers"
             }
-          },
-          {
-            "id": "4618b3b82104479d",
-            "type": "leaf",
-            "state": {
-              "type": "pdf",
-              "state": {
-                "file": "CLRS.pdf"
-              },
-              "icon": "lucide-file-text",
-              "title": "CLRS"
-            }
           }
         ],
-        "currentTab": 5
+        "currentTab": 4
       }
     ],
     "direction": "vertical"
@@ -252,22 +240,39 @@
       "bases:Create new base": false
     }
   },
-  "active": "4618b3b82104479d",
+  "active": "8cdc9e05538e8955",
   "lastOpenFiles": [
-    "download.png",
     "Data structure/Segment Tree.md",
     "Data structure",
     "CLRS.pdf",
-    "counting/Binomial Coefficient Fundamentals.md",
-    "math/Fibonacci numbers.md",
-    "counting/Combinatorics Identities Editorial.md",
+    "Segment Tree.md",
+    "math/Vieta Strategy.md",
+    "counting/Counting_Probability.pdf",
+    "Gyms/ECPC Teens 2024 (online qualification).md",
+    "Contests/Atcoder.md",
+    "Contests",
+    "counting/Catalan Numbers.md",
+    "Gyms",
     "counting/Grid Walking Combinatorics Editorial.md",
-    "math/Fermat’s Little Theorem (FLT).md",
+    "counting/Series summations.png",
+    "counting/The Pigeonhole Principle.md",
+    "counting/summations.png",
+    "counting/Euler_totient.txt",
+    "summations.png",
+    "Series summations.png",
+    "Euler_totient.txt",
+    "counting/Formulas.pdf",
     "math/Extended Euclidean Algorithm (EEA).md",
     "math/Bézout's Theorem.md",
-    "math/Least Common Multiple (LCM).md",
-    "math/Greatest Common Divisor (GCD).md",
     "math/Modular Multiplicative Inverse (MMI).md",
+    "math/Greatest Common Divisor (GCD).md",
+    "download.png",
+    "counting/Combinatorics Identities Editorial.md",
+    "math/Fibonacci numbers.md",
+    "math/Untitled 1.md",
+    "counting/Binomial Coefficient Fundamentals.md",
+    "math/Fermat’s Little Theorem (FLT).md",
+    "math/Least Common Multiple (LCM).md",
     "math"
   ]
 }
