@@ -1,3 +1,28 @@
+## **AtCoder Beginner Contest 438**
+
+[https://atcoder.jp/contests/abc438](https://atcoder.jp/contests/abc438)
+
+| **ID** | **Problem Title**             | **Primary Techniques & Tags**                       |
+| ------ | ----------------------------- | --------------------------------------------------- |
+| **A**  | **First Contest of the Year** | Implementation / Math                               |
+| **B**  | **Substring 2**               | String / Brute Force                                |
+| **C**  | **1D puyopuyo**               | Stack / Simulation                                  |
+| **D**  | **Tail of Snake**             | DP / Prefix Max optimization                        |
+| **E**  | **Heavy Buckets**             | Functional Graph / Doubling / Level Ancestor        |
+| **F**  | **Sum of Mex**                | Tree / Contribution of Each Value / Path Properties |
+| **G**  | **Sum of Min**                | Number Theory / GCD / Counting with Sorting         |
+
+### **Checklist: Upsolve List**
+
+- [ ] **D** . Tail of Snake
+- [ ] **E** . Heavy Bucket
+### **Research & Advanced Topics Needed**
+
+| **ID** | **Problem Title** | **Target Techniques to Master**                                                                                                                                                                  |
+| ------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **F**  | **Sum of Mex**    | **Tree Path Coverage**: Finding the minimal path that contains a specific set of vertices.<br>**Contribution Technique**: Counting pairs $(i, j)$ such that $path(i, j)$ covers a set of values. |
+| **G**  | **Sum of Min**    | **Modular Periodicity**: Handling sums with $i \pmod N$ and $i \pmod M$ indices.<br>**GCD Reduction**: Reducing periodic problems to the $gcd(N, M)=1$ case.                                     |
+
 ## **AtCoder Beginner Contest 445**
 
 [https://atcoder.jp/contests/abc445](https://atcoder.jp/contests/abc445)
