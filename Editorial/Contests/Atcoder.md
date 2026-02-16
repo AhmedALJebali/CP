@@ -1,4 +1,29 @@
+## **AtCoder Beginner Contest 445**
 
+[https://atcoder.jp/contests/abc445](https://atcoder.jp/contests/abc445)
+
+| **ID** | **Problem Title**         | **Primary Techniques & Tags**                   |
+| ------ | ------------------------- | ----------------------------------------------- |
+| **A**  | **Strong Word**           | String / Implementation                         |
+| **B**  | **Center Alignment**      | Implementation / String                         |
+| **C**  | **Sugoroku Destination**  | DSU                                             |
+| **D**  | **Reconstruct Chocolate** | Greedy / Implementation                         |
+| **E**  | **Many LCMs**             | Number Theory / Prime Factorization             |
+| **F**  | **Exactly K Steps 2**     | Matrix Exponentiation / Min-Plus Semiring       |
+| **G**  | **Knight Placement**      | Bipartite Matching / Max Flow / Independent Set |
+
+### **Checklist: Upsolve List**
+
+
+- [x] **D** . **Reconstruct Chocolate**
+- [x] E  . **Many LCMs**
+
+### **Research & Advanced Topics Needed**
+
+| **ID** | **Problem Title**     | **Target Techniques to Master**                                                                            |
+| ------ | --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **F**  | **Exactly K Steps 2** | **Matrix Exponentiation (Min-Plus Semiring)**<br>**Shortest Path with Fixed Edge Count**                   |
+| **G**  | **Knight Placement**  | **Maximum Independent Set on Bipartite Graphs**<br>**Max Flow (Dinic's Algorithm)**<br>**Konig's Theorem** |
 ## **AtCoder Beginner Contest 443**
 
 [https://atcoder.jp/contests/abc443](https://atcoder.jp/contests/abc443)
@@ -16,7 +41,7 @@
 ### **Checklist: Upsolve List**
 
 - [x] **D** . Pawn Line
-- [ ] **E** . Climbing Silver
+- [x] **E** . Climbing Silver
 - [ ] **F** . Non-Increasing Number
 
 ### **Research & Advanced Topics Needed**
