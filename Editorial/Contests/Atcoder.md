@@ -1,3 +1,31 @@
+## **AtCoder Beginner Contest 437**
+
+[https://atcoder.jp/contests/abc437](https://atcoder.jp/contests/abc437)
+
+| **ID** | **Problem Title**              | **Primary Techniques & Tags**                |
+| ------ | ------------------------------ | -------------------------------------------- |
+| **A**  | **Feet**                       | Math / Implementation                        |
+| **B**  | **Tombola**                    | Simulation / Brute Force                     |
+| **C**  | **Reindeer and Sleigh 2**      | Greedy / Sorting                             |
+| **D**  | **Sum of Differences**         | Math / Sorting / Prefix Sums                 |
+| **E**  | **Sort Arrays**                | Trie / DFS / Lexicographical Order           |
+| **F**  | **Manhattan Christmas Tree 2** | Segment Tree / Manhattan Distance            |
+| **G**  | **Colorful Christmas Tree**    | Bipartite Matching / Max Flow / Constructive |
+
+### **Checklist: Upsolve List**
+
+- [ ] **E** . Sort Arrays
+- [ ] **F** . Manhattan Christmas Tree 2
+- [ ] **G** . Colorful Christmas Tree
+
+### **Research & Advanced Topics Needed**
+
+| **ID** | **Problem Title**              | **Target Techniques to Master**              |
+| ------ | ------------------------------ | -------------------------------------------- |
+| **E**  | **Sort Arrays**                | Trie / DFS / Lexicographical Order           |
+| **F**  | **Manhattan Christmas Tree 2** | Segment Tree / Manhattan Distance            |
+| **G**  | **Colorful Christmas Tree**    | Bipartite Matching / Max Flow / Constructive |
+
 ## **AtCoder Beginner Contest 438**
 
 [https://atcoder.jp/contests/abc438](https://atcoder.jp/contests/abc438)
@@ -45,10 +73,10 @@
 
 ### **Research & Advanced Topics Needed**
 
-| **ID** | **Problem Title**     | **Target Techniques to Master**                                                                            |
-| ------ | --------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **F**  | **Exactly K Steps 2** | **Matrix Exponentiation (Min-Plus Semiring)**<br>**Shortest Path with Fixed Edge Count**                   |
-| **G**  | **Knight Placement**  | **Maximum Independent Set on Bipartite Graphs**<br>**Max Flow (Dinic's Algorithm)**<br>**Konig's Theorem** |
+| **ID** | **Problem Title**     | **Target Techniques to Master**                 |
+| ------ | --------------------- | ----------------------------------------------- |
+| **F**  | **Exactly K Steps 2** | Matrix Exponentiation / Min-Plus Semiring       |
+| **G**  | **Knight Placement**  | Bipartite Matching / Max Flow / Independent Set |
 ## **AtCoder Beginner Contest 443**
 
 [https://atcoder.jp/contests/abc443](https://atcoder.jp/contests/abc443)

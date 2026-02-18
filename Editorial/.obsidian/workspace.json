@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Contests/Atcoder.md",
+                "file": "Month-Long Mastery Checklist.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Atcoder"
+              "title": "Month-Long Mastery Checklist"
             }
           }
         ]
@@ -185,12 +185,15 @@
   },
   "active": "664f9f084c6b8648",
   "lastOpenFiles": [
+    "STRINGS/String Hashing.md",
+    "Month-Long Mastery Checklist.md",
+    "Contests/Atcoder.md",
+    "STRINGS",
     "Gyms/JCPC 2023.md",
     "Gyms/ECPC Teens 2024 (online qualification).md",
     "math/Bézout's Theorem.md",
     "math/Fermat’s Little Theorem (FLT).md",
     "math/Fibonacci numbers.md",
-    "Contests/Atcoder.md",
     "math/Modular Multiplicative Inverse (MMI).md",
     "math/Vieta Strategy.md",
     "counting/Stars and Bars Theorem.md",
@@ -213,8 +216,6 @@
     "Gyms/ECPC Teens 2024 (online qualification) 1.md",
     "Contests/Atcoder 2.md",
     "Contests/Atcoder 1.md",
-    "counting/Vieta Strategy.md",
-    "counting/Fibonacci numbers.md",
     "CLRS.pdf",
     "counting/Counting_Probability.pdf",
     "Contests",
