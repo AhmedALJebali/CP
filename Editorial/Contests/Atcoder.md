@@ -1,3 +1,28 @@
+
+[https://atcoder.jp/contests/abc433](https://atcoder.jp/contests/abc433)
+
+| **ID** | **Problem Title**      | **Primary Techniques & Tags**           |
+| ------ | ---------------------- | --------------------------------------- |
+| **A**  | **Happy Birthday! 4**  | Math / Implementation                   |
+| **B**  | **Nearest Taller**     | Implementation / Monotonic Stack        |
+| **C**  | **1122 Substring 2**   | String / Run-Length Encoding            |
+| **D**  | **183183**             | Math / Digits / Modulo / Counting       |
+| **E**  | **Max Matrix 2**       | Greedy / Matrix Construction            |
+| **F**  | **1122 Subsequence 2** | DP / String / Combinatorics             |
+| **G**  | **Substring Game**     | Game Theory / String / Suffix Automaton |
+
+### **Checklist: Upsolve List**
+
+- [x] **A** . **Happy Birthday! 4**
+- [x] D . 183183
+- [ ] **F** . 1122 Subsequence 2
+- [ ] **G** . Substring Game
+### **Research & Advanced Topics Needed**
+
+| **ID** | **Problem Title**              | **Target Techniques to Master**         |
+| ------ | ------------------------------ | --------------------------------------- |
+| **G**  | **Substring Game**             | Game Theory / String / Suffix Automaton |
+
 ## **AtCoder Beginner Contest 437**
 
 [https://atcoder.jp/contests/abc437](https://atcoder.jp/contests/abc437)
