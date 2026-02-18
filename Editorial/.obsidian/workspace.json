@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Month-Long Mastery Checklist.md",
+                "file": "Strings/## Polynomial Hash.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Month-Long Mastery Checklist"
+              "title": "## Polynomial Hash"
             }
           }
         ]
@@ -185,8 +185,14 @@
   },
   "active": "664f9f084c6b8648",
   "lastOpenFiles": [
+    "30 DAYS Challange/Month-Long Mastery Checklist.md",
+    "Strings/## Polynomial Hash.md",
+    "Strings",
+    "Untitled.md",
+    "30 DAYS Challange/DAY 1.md",
+    "30 DAYS Challange",
+    "STRINGS/Untitled.md",
     "STRINGS/String Hashing.md",
-    "Month-Long Mastery Checklist.md",
     "Contests/Atcoder.md",
     "STRINGS",
     "Gyms/JCPC 2023.md",
@@ -212,10 +218,6 @@
     "counting/Euler_totient.txt",
     "Data structure/Segment Tree.md",
     "counting/The Pigeonhole Principle 1.md",
-    "Gyms/ECPC Teens 2024 (online qualification) 2.md",
-    "Gyms/ECPC Teens 2024 (online qualification) 1.md",
-    "Contests/Atcoder 2.md",
-    "Contests/Atcoder 1.md",
     "CLRS.pdf",
     "counting/Counting_Probability.pdf",
     "Contests",
@@ -223,8 +225,6 @@
     "summations.png",
     "Series summations.png",
     "Euler_totient.txt",
-    "download.png",
-    "Data structure",
-    "math"
+    "download.png"
   ]
 }
