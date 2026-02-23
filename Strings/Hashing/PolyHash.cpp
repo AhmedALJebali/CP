@@ -1,21 +1,19 @@
-const uint64_t HashMod = (1ULL << 61) - 1;
-const uint64_t seed = chrono::system_clock::now().time_since_epoch().count();
-const uint64_t base = mt19937_64(seed)() % (HashMod / 3) + (HashMod / 3);
 
-int64_t MUL(uint64_t a, uint64_t b) {
-    uint64_t l1 = (uint32_t) a, h1 = a >> 32, l2 = (uint32_t) b, h2 = b >> 32;
-    uint64_t l = l1 * l2, m = l1 * h2 + l2 * h1, h = h1 * h2;
-    uint64_t ret = (l & HashMod) + (l >> 61) + (h << 3) + (m >> 29) + (m << 35 >> 3) + 1;
-    ret = (ret & HashMod) + (ret >> 61);
-    ret = (ret & HashMod) + (ret >> 61);
-    return (int64_t) ret - 1;
+const uint64_t HashMod = (1ULL << 61) - 1;
+
+inline uint64_t MUL(uint64_t a, uint64_t b) {
+    __uint128_t t = (__uint128_t)a * b;
+    uint64_t l = (uint64_t)t & HashMod;
+    uint64_t h = (uint64_t)(t >> 61);
+    uint64_t res = l + h;
+    if (res >= HashMod) res -= HashMod;
+    return res;
 }
 
 struct PolyHash61 {
-    static const uint64_t HashMod = (1ULL << 61) - 1;
-    uint64_t base1, base2;
     int n;
-    vector<uint64_t> pow1, pow2, pref1, pref2, inv1, inv2, suff1, suff2;
+    uint64_t base1, base2;
+    vector<uint64_t> pow1, pow2, inv1, inv2, pref1, pref2, suff1, suff2;
 
     static uint64_t getRandomBase() {
         static mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
@@ -35,10 +33,18 @@ struct PolyHash61 {
 
     PolyHash61(const string &s) {
         n = s.size();
-        base1 = getRandomBase(),
-                base2 = getRandomBase(), pow1.assign(n + 1, 1), pow2.assign(n + 1, 1), inv1.assign(n + 1, 1), inv2.
-                assign(n + 1, 1), pref1.assign(n + 1, 0), pref2.assign(n + 1, 0), suff1.assign(n + 1, 0), suff2.assign(
-                    n + 1, 0);
+        base1 = getRandomBase();
+        base2 = getRandomBase();
+        while(base2 == base1) base2 = getRandomBase(); // ensure different bases
+
+        pow1.assign(n + 1, 1);
+        pow2.assign(n + 1, 1);
+        inv1.assign(n + 1, 1);
+        inv2.assign(n + 1, 1);
+        pref1.assign(n + 1, 0);
+        pref2.assign(n + 1, 0);
+        suff1.assign(n + 1, 0);
+        suff2.assign(n + 1, 0);
 
         uint64_t invBase1 = modPow(base1, HashMod - 2);
         uint64_t invBase2 = modPow(base2, HashMod - 2);
@@ -49,30 +55,45 @@ struct PolyHash61 {
             inv1[i] = MUL(inv1[i - 1], invBase1);
             inv2[i] = MUL(inv2[i - 1], invBase2);
         }
-        // Reverse hash
-        // Forward hash
-        pref1[0] = s[0], pref2[0] = s[0], suff1[0] = MUL(s[0], pow1[n - 1]), suff2[0] = MUL(s[0], pow2[n - 1]);
-        for (int i = 1; i < n; i++) {
-            pref1[i] = (pref1[i - 1] + MUL(s[i], pow1[i])) % HashMod;
-            pref2[i] = (pref2[i - 1] + MUL(s[i], pow2[i])) % HashMod;
-            suff1[i] = (suff1[i - 1] + MUL(s[i], pow1[n - i - 1])) % HashMod;
-            suff2[i] = (suff2[i - 1] + MUL(s[i], pow2[n - i - 1])) % HashMod;
+
+        // forward hash
+        for (int i = 0; i < n; i++) {
+            pref1[i] = (i ? pref1[i - 1] : 0) + MUL(s[i], pow1[i]);
+            pref1[i] = (pref1[i] >= HashMod ? pref1[i] - HashMod : pref1[i]);
+            pref2[i] = (i ? pref2[i - 1] : 0) + MUL(s[i], pow2[i]);
+            pref2[i] = (pref2[i] >= HashMod ? pref2[i] - HashMod : pref2[i]);
+        }
+
+        // reverse hash
+        for (int i = 0; i < n; i++) {
+            suff1[i] = (i ? suff1[i - 1] : 0) + MUL(s[n - i - 1], pow1[i]);
+            suff1[i] = (suff1[i] >= HashMod ? suff1[i] - HashMod : suff1[i]);
+            suff2[i] = (i ? suff2[i - 1] : 0) + MUL(s[n - i - 1], pow2[i]);
+            suff2[i] = (suff2[i] >= HashMod ? suff2[i] - HashMod : suff2[i]);
         }
     }
 
     pair<uint64_t, uint64_t> getHash(int l, int r) {
         uint64_t x1 = pref1[r] - (l ? pref1[l - 1] : 0);
+        if (x1 >= HashMod) x1 += HashMod;
+        x1 = MUL(x1, inv1[l]);
+
         uint64_t x2 = pref2[r] - (l ? pref2[l - 1] : 0);
-        x1 = (MUL(x1, inv1[l]) + HashMod) % HashMod;
-        x2 = (MUL(x2, inv2[l]) + HashMod) % HashMod;
+        if (x2 >= HashMod) x2 += HashMod;
+        x2 = MUL(x2, inv2[l]);
+
         return {x1, x2};
     }
 
     pair<uint64_t, uint64_t> getReverseHash(int l, int r) {
-        uint64_t x1 = suff1[r] - (l ? suff1[l - 1] : 0);
-        uint64_t x2 = suff2[r] - (l ? suff2[l - 1] : 0);
-        x1 = (MUL(x1, inv1[n - r - 1]) + HashMod) % HashMod;
-        x2 = (MUL(x2, inv2[n - r - 1]) + HashMod) % HashMod;
+        uint64_t x1 = suff1[n - l - 1] - (r + 1 < n ? suff1[n - r - 2] : 0);
+        if (x1 >= HashMod) x1 += HashMod;
+        x1 = MUL(x1, inv1[n - r - 1]);
+
+        uint64_t x2 = suff2[n - l - 1] - (r + 1 < n ? suff2[n - r - 2] : 0);
+        if (x2 >= HashMod) x2 += HashMod;
+        x2 = MUL(x2, inv2[n - r - 1]);
+
         return {x1, x2};
     }
 
