@@ -1,25 +1,24 @@
-
 const uint64_t HashMod = (1ULL << 61) - 1;
-
+uint64_t getRandomBase() {
+    static mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
+    uniform_int_distribution<uint64_t> dist(HashMod / 3, 2 * HashMod / 3);
+    return dist(rng);
+}
+uint64_t base1 = getRandomBase(), base2 = getRandomBase();
 inline uint64_t MUL(uint64_t a, uint64_t b) {
-    __uint128_t t = (__uint128_t)a * b;
-    uint64_t l = (uint64_t)t & HashMod;
-    uint64_t h = (uint64_t)(t >> 61);
+    __uint128_t t = (__uint128_t) a * b;
+    uint64_t l = (uint64_t) t & HashMod;
+    uint64_t h = (uint64_t) (t >> 61);
     uint64_t res = l + h;
     if (res >= HashMod) res -= HashMod;
     return res;
 }
 
-struct PolyHash61 {
+struct FastHash {
     int n;
-    uint64_t base1, base2;
     vector<uint64_t> pow1, pow2, inv1, inv2, pref1, pref2, suff1, suff2;
 
-    static uint64_t getRandomBase() {
-        static mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-        uniform_int_distribution<uint64_t> dist(HashMod / 3, 2 * HashMod / 3);
-        return dist(rng);
-    }
+    static
 
     uint64_t modPow(uint64_t a, uint64_t e) {
         uint64_t res = 1;
@@ -31,12 +30,8 @@ struct PolyHash61 {
         return res;
     }
 
-    PolyHash61(const string &s) {
+    FastHash(const string &s) {
         n = s.size();
-        base1 = getRandomBase();
-        base2 = getRandomBase();
-        while(base2 == base1) base2 = getRandomBase(); // ensure different bases
-
         pow1.assign(n + 1, 1);
         pow2.assign(n + 1, 1);
         inv1.assign(n + 1, 1);
@@ -45,7 +40,6 @@ struct PolyHash61 {
         pref2.assign(n + 1, 0);
         suff1.assign(n + 1, 0);
         suff2.assign(n + 1, 0);
-
         uint64_t invBase1 = modPow(base1, HashMod - 2);
         uint64_t invBase2 = modPow(base2, HashMod - 2);
 
@@ -73,7 +67,7 @@ struct PolyHash61 {
         }
     }
 
-    pair<uint64_t, uint64_t> getHash(int l, int r) {
+    pair<uint64_t, uint64_t> qry(int l, int r) {
         uint64_t x1 = pref1[r] - (l ? pref1[l - 1] : 0);
         if (x1 >= HashMod) x1 += HashMod;
         x1 = MUL(x1, inv1[l]);
@@ -85,7 +79,7 @@ struct PolyHash61 {
         return {x1, x2};
     }
 
-    pair<uint64_t, uint64_t> getReverseHash(int l, int r) {
+    pair<uint64_t, uint64_t> revqry(int l, int r) {
         uint64_t x1 = suff1[n - l - 1] - (r + 1 < n ? suff1[n - r - 2] : 0);
         if (x1 >= HashMod) x1 += HashMod;
         x1 = MUL(x1, inv1[n - r - 1]);
@@ -98,6 +92,6 @@ struct PolyHash61 {
     }
 
     bool isPalindrome(int l, int r) {
-        return getHash(l, r) == getReverseHash(l, r);
+        return qry(l, r) == revqry(l, r);
     }
 };
