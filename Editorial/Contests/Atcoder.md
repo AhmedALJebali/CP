@@ -1,4 +1,63 @@
 
+
+
+##  AtCoder Beginner Contest 446
+
+[https://atcoder.jp/contests/abc350](https://atcoder.jp/contests/abc350)
+
+| **ID** | **Problem Title**     | **Primary Techniques & Tags**           |
+| ------ | --------------------- | --------------------------------------- |
+| **A**  | **Past ABCs**         | String / Implementation                 |
+| **B**  | **Dentist Takahashi** | Implementation / Simulation             |
+| **C**  | **Sort it Out**       | Sorting / Permutations / Swapping       |
+| **D**  | **New Friends**       | Graph / DSU / Combinatorics             |
+| **E**  | **Toward 0**          | DP Expected Value                       |
+| **F**  | **Transpose**         | String / Stack / Recursion              |
+| **G**  | **Mediator**          | Graph / Tree / DSU / Square Root Decomp |
+
+### **Checklist: Upsolve List**
+
+- [ ] **F** . **Transpose**
+- [ ] **G** . **Mediator**
+### **Research & Advanced Topics Needed**
+
+| **ID** | **Problem Title** | **Target Techniques to Master**                        |
+| ------ | ----------------- | ------------------------------------------------------ |
+| **E**  | **Toward 0**      | Expected Value DP                                      |
+| **F**  | **Transpose**     | Efficient Parentheses Matching / String Transformation |
+| **G**  | **Mediator**      | Link-Cut Tree / Heavy-Light Decomposition (HLD) / DSU  |
+
+## ** AtCoder Beginner Contest 446**
+
+### **Problem Summary & Technical Stack**
+
+| **ID** | **Problem Title**           | **Primary Techniques & Tags**       |
+| ------ | --------------------------- | ----------------------------------- |
+| **A**  | **Handmaid**                | Math / Implementation               |
+| **B**  | **Greedy Draft**            | Greedy / Simulation                 |
+| **C**  | **Omelette Restaurant**     | Queue / Simulation / Sliding Window |
+| **D**  | **Max Straight**            | DP                                  |
+| **E**  | **Multiple-Free Sequences** | BFS / DP                            |
+| **F**  | **Reachable Set 2**         | BFS                                 |
+| **G**  | **221 Subsequence**         | DP / String / Combinatorics         |
+
+---
+
+### **Checklist: Upsolve List**
+
+- [x] **F** . **Reachable Set 2**
+- [ ] **G** . **221 Subsequence**
+
+---
+
+### **Research & Advanced Topics Needed**
+
+| **ID** | **Problem Title**           | **Target Techniques to Master**                          |
+| ------ | --------------------------- | -------------------------------------------------------- |
+| **G**  | **221 Subsequence**         | Automaton-based DP / Counting Subsequences               |
+
+## **AtCoder Beginner Contest 433
+
 [https://atcoder.jp/contests/abc433](https://atcoder.jp/contests/abc433)
 
 | **ID** | **Problem Title**      | **Primary Techniques & Tags**           |
