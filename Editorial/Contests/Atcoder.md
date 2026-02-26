@@ -1,7 +1,7 @@
 
 
 
-##  AtCoder Beginner Contest 446
+## AtCoder Beginner Contest 446
 
 [https://atcoder.jp/contests/abc350](https://atcoder.jp/contests/abc350)
 
@@ -17,8 +17,7 @@
 
 ### **Checklist: Upsolve List**
 
-- [ ] **F** . **Transpose**
-- [ ] **G** . **Mediator**
+- [x] **E. Toward 0**
 ### **Research & Advanced Topics Needed**
 
 | **ID** | **Problem Title** | **Target Techniques to Master**                        |
@@ -27,9 +26,8 @@
 | **F**  | **Transpose**     | Efficient Parentheses Matching / String Transformation |
 | **G**  | **Mediator**      | Link-Cut Tree / Heavy-Light Decomposition (HLD) / DSU  |
 
-## ** AtCoder Beginner Contest 446**
+## **AtCoder Beginner Contest 446**
 
-### **Problem Summary & Technical Stack**
 
 | **ID** | **Problem Title**           | **Primary Techniques & Tags**       |
 | ------ | --------------------------- | ----------------------------------- |
@@ -46,7 +44,6 @@
 ### **Checklist: Upsolve List**
 
 - [x] **F** . **Reachable Set 2**
-- [ ] **G** . **221 Subsequence**
 
 ---
 
@@ -75,7 +72,6 @@
 - [x] **A** . **Happy Birthday! 4**
 - [x] D . 183183
 - [ ] **F** . 1122 Subsequence 2
-- [ ] **G** . Substring Game
 ### **Research & Advanced Topics Needed**
 
 | **ID** | **Problem Title**              | **Target Techniques to Master**         |

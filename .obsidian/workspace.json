@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Editorial/Gyms/ECPC Teens 2024 (online qualification).md",
+                "file": "Editorial/Gyms/The 2023 ICPC Egyptian Collegiate Programming Contest (Qualifications Day 3).md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ECPC Teens 2024 (online qualification)"
+              "title": "The 2023 ICPC Egyptian Collegiate Programming Contest (Qualifications Day 3)"
             }
           }
         ]
@@ -185,9 +185,13 @@
   },
   "active": "c77b79d3bfa6e83d",
   "lastOpenFiles": [
-    "Editorial/Gyms/JCPC 2023.md",
+    "Editorial/Gyms/OCPC 2025 (Qualification).md",
+    "Editorial/Gyms/KCPC 2023.md",
     "Editorial/Gyms/ECPC Teens 2024 (online qualification).md",
+    "Editorial/Strings/## Polynomial Hash.md",
+    "Editorial/Gyms/The 2023 ICPC Egyptian Collegiate Programming Contest (Qualifications Day 3).md",
     "Editorial/30 DAYS Challange/Month-Long Mastery Checklist.md",
-    "Editorial/Contests/Atcoder.md"
+    "Editorial/Contests/Atcoder.md",
+    "Editorial/Gyms/JCPC 2023.md"
   ]
 }
