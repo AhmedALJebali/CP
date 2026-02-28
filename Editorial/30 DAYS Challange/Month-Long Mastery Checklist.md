@@ -68,6 +68,7 @@ _5-hour simulations to build endurance._
 - [x] **Tree Diameter (DFS)**
 - [ ] **Euler Tour Technique (ETT)**
 - [ ] **LCA: Binary Lifting & RMQ**
+- [ ] **Flatting Tree**
 - [ ] **Heavy-Light Decomposition (HLD)**
 - [ ] **Centroid Decomposition**
 - [ ] **DSU on Tree (Sack / Small-to-Large)**
@@ -115,3 +116,4 @@ _5-hour simulations to build endurance._
 - [ ] **Divide & Conquer Optimization**
 - [ ] **Knuth’s Optimization**
 - [ ] **Matrix Exponentiation**
+- [ ] **Open Close Intervals Trick**
