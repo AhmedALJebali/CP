@@ -1,33 +1,35 @@
 struct DSU {
-    vector<int> parent, group;
-    int comp;
+  vector<int> p, sz;
+  int comp, mx;
 
-    void init(int n) {
-        comp = n;
-        parent.resize(n + 1);
-        group.resize(n + 1);
-        for (int i = 0; i <= n; i++) {
-            parent[i] = i;
-            group[i] = 1;
-        }
+  DSU(int n) {
+    comp = n;
+    mx = 1;
+    p.resize(n + 1);
+    sz.resize(n + 1);
+    for (int i = 0; i <= n; i++) {
+      p[i] = i;
+      sz[i] = 1;
     }
+  }
 
-    int find(int node) {
-        if (parent[node] == node) return node;
-        return parent[node] = find(parent[node]);
+  int f(int node) { return p[node] == node ? node : p[node] = f(p[node]); }
+
+  bool mrg(int u, int v) {
+    u = f(u);
+    v = f(v);
+
+    if (u == v) {
+      return false;
     }
+    if (sz[v] > sz[u])
+      swap(u, v);
+    p[v] = u;
+    sz[u] += sz[v];
+    mx = max(mx, sz[u]);
+    return true;
+  }
 
-    bool merge(int u, int v) {
-        int leaderU = find(u);
-        int leaderV = find(v);
-        if (leaderU == leaderV) { return false; }
-        if (group[leaderU] > group[leaderV]) { swap(leaderU, leaderV); }
-        parent[leaderU] = leaderV;
-        group[leaderV] += group[leaderU];
-        comp--;
-        return true;
-    }
-
-    int get_size(int node) { return group[find(node)]; }
-    bool sameGroup(int u, int v) { return find(u) == find(v); }
+  int gz(int node) { return sz[f(node)]; }
+  bool isconnected(int u, int v) { return f(u) == f(v); }
 };
