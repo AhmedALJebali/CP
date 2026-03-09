@@ -66,12 +66,15 @@ _5-hour simulations to build endurance._
 ##  Tree Algorithms
 
 - [x] **Tree Diameter (DFS)**
+- [x] **LCA: Binary Lifting & RMQ**
 - [ ] **Euler Tour Technique (ETT)**
-- [ ] **LCA: Binary Lifting & RMQ**
 - [ ] **Flatting Tree**
 - [ ] **Heavy-Light Decomposition (HLD)**
 - [ ] **Centroid Decomposition**
 - [ ] **DSU on Tree (Sack / Small-to-Large)**
+- [x] **Prim's Algorithm (MST)**
+- [ ] **Kruskal's Algorithm (MST)**
+
 ---
 
 ##  Graph Connectivity & Paths
