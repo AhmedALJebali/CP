@@ -50,7 +50,7 @@ _5-hour simulations to build endurance._
 - [x] **Gym #1**
 - [x] **Gym  #2**
 - [x] **Gym  #3**
-- [ ] **Gym #4**
+- [x] **Gym #4**
 ---
 ##  Strings & Hashing
 
@@ -67,38 +67,36 @@ _5-hour simulations to build endurance._
 
 - [x] **Tree Diameter (DFS)**
 - [x] **LCA: Binary Lifting & RMQ**
-- [ ] **Euler Tour Technique (ETT)**
-- [ ] **Flatting Tree**
+- [x] **Euler Tour Technique (ETT)**
+- [x] **Flatting Tree**
+- [x] **Prim's Algorithm (MST)**
 - [ ] **Heavy-Light Decomposition (HLD)**
 - [ ] **Centroid Decomposition**
 - [ ] **DSU on Tree (Sack / Small-to-Large)**
-- [x] **Prim's Algorithm (MST)**
 - [ ] **Kruskal's Algorithm (MST)**
 
 ---
 
-##  Graph Connectivity & Paths
+##  Graph Connectivity 
 
-- [ ] **Dijkstra’s Algorithm**
 - [ ] **DFS Tree Properties**
 - [ ] **SCC: Tarjan’s & Kosaraju’s**
 - [ ] **Bridges & Articulation Points**
 - [ ] **Bridge Tree & Block-Cut Tree**
-- [ ] **Minimum Spanning Tree (Kruskal’s)**
 - [ ] **0/1 BFS**
 - [ ] **Eulerian Path & Circuit**
 - [ ] **Shortest Path Faster Algorithm (SPFA)**
 
 ---
 
-##  Advanced Data Structures & Mo's
+##  Advanced Data Structures 
 
-- [ ] **Segment Tree: Persistent Segment Tree**
-- [ ] **Segment Tree: Segment Tree Beats**
 - [ ] **SQRT Decomposition**
 - [ ] **Standard Mo’s Algorithm**
 - [ ] **Mo’s with Rollback & Mo’s with DSU**
 - [ ] **Mo’s on Tree**
+- [ ] **Segment Tree: Persistent Segment Tree**
+- [ ] **Segment Tree: Segment Tree Beats**
 
 ---
 
