@@ -1,6 +1,3 @@
-
-
-
 ## AtCoder Beginner Contest 446
 
 [https://atcoder.jp/contests/abc350](https://atcoder.jp/contests/abc350)

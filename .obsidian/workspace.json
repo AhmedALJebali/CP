@@ -13,15 +13,44 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Editorial/Gyms/ECPC Qualifications 2025 Day 5 (Mirror).md",
+                "file": "Missing Topics Al-Jebal.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "ECPC Qualifications 2025 Day 5 (Mirror)"
+              "title": "Missing Topics Al-Jebal"
+            }
+          },
+          {
+            "id": "c068a148d159587c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Missing Topics Al-Jebali.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Missing Topics Al-Jebali"
+            }
+          },
+          {
+            "id": "e9a05efa6365c68b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Equations.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Equations"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -183,15 +212,23 @@
       "bases:Create new base": false
     }
   },
-  "active": "c77b79d3bfa6e83d",
+  "active": "e9a05efa6365c68b",
   "lastOpenFiles": [
+    "Tasks.md",
+    "Equations.md",
+    "Quetions.md",
+    "Missing Topics Al-Jebal.md",
     "Editorial/Gyms/ECPC Teens 2024 (online qualification).md",
+    "Missing Topics Al-Jebali.md",
+    "Editorial/30 DAYS Challange/Mastery Checklist.md",
+    "Editorial/Contests/Atcoder.md",
+    "Editorial/counting/Series summations.png",
+    "Editorial/counting/Formulas.pdf",
+    "Editorial/counting/Binomial Coefficient Fundamentals.md",
     "Editorial/Gyms/ECPC Qualifications 2025 Day 5 (Mirror).md",
     "Editorial/Gyms/KCPC 2023.md",
-    "Editorial/30 DAYS Challange/Month-Long Mastery Checklist.md",
     "Editorial/Gyms/The 2023 ICPC Egyptian Collegiate Programming Contest (Qualifications Day 3).md",
     "Editorial/Gyms/OCPC 2025 (Qualification).md",
-    "Editorial/Contests/Atcoder.md",
     "Editorial/Strings/## Polynomial Hash.md",
     "Editorial/Gyms/JCPC 2023.md"
   ]
