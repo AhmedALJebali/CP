@@ -13,44 +13,16 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Missing Topics Al-Jebal.md",
+                "file": "Geometry/Trigonometric Identities.md",
                 "mode": "source",
-                "source": false
+                "source": false,
+                "backlinks": false
               },
               "icon": "lucide-file",
-              "title": "Missing Topics Al-Jebal"
-            }
-          },
-          {
-            "id": "c068a148d159587c",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Missing Topics Al-Jebali.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Missing Topics Al-Jebali"
-            }
-          },
-          {
-            "id": "e9a05efa6365c68b",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Equations.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Equations"
+              "title": "Trigonometric Identities"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -212,19 +184,30 @@
       "bases:Create new base": false
     }
   },
-  "active": "e9a05efa6365c68b",
+  "active": "c77b79d3bfa6e83d",
   "lastOpenFiles": [
-    "Tasks.md",
-    "Equations.md",
-    "Quetions.md",
+    "Template/Geometry.md",
+    "Geometry/Trigonometric Identities.md",
+    "Geometry",
+    "Template/MO ALgo.md",
+    "Template/Fenwick Tree.md",
+    "Template/Orderd Set.md",
+    "Template/Segment tree.md",
+    "Template/Sparse Table.md",
     "Missing Topics Al-Jebal.md",
+    "Editorial/counting/Catalan Numbers.md",
+    "Editorial/counting/Binomial Coefficient Fundamentals.md",
+    "Problems Ideas.md",
+    "Template",
+    "Equations.md",
+    "Tasks.md",
+    "Quetions.md",
     "Editorial/Gyms/ECPC Teens 2024 (online qualification).md",
     "Missing Topics Al-Jebali.md",
     "Editorial/30 DAYS Challange/Mastery Checklist.md",
     "Editorial/Contests/Atcoder.md",
     "Editorial/counting/Series summations.png",
     "Editorial/counting/Formulas.pdf",
-    "Editorial/counting/Binomial Coefficient Fundamentals.md",
     "Editorial/Gyms/ECPC Qualifications 2025 Day 5 (Mirror).md",
     "Editorial/Gyms/KCPC 2023.md",
     "Editorial/Gyms/The 2023 ICPC Egyptian Collegiate Programming Contest (Qualifications Day 3).md",

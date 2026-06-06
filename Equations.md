@@ -61,3 +61,90 @@ To find the time $t$ at which the function reaches its **minimum value** (e.g., 
 **Standard Formula:**
 
 $$t_{min} = -\frac{b}{2a}$$
+
+## A Comprehensive Guide: Extracting Number Properties Using Prime Factorization
+
+
+Many mathematical algorithms rely on one fundamental step: **Prime Factorization**.
+
+Any integer $N$ can be expressed as a product of prime numbers raised to specific powers. The standard mathematical representation is:
+
+$$N = p_1^{e_1} \cdot p_2^{e_2} \cdots p_k^{e_k}$$
+
+_(where $p$ represents a prime factor, and $e$ represents its exponent or the number of times it is repeated)._
+
+Once you break down a number into this format, it becomes an open book. You can easily extract several of its properties, as explained below.
+
+---
+
+### 1. Number of Divisors
+
+**The Core Concept:**
+
+Any divisor of $N$ must be built from the exact same prime factors, but with exponents that can range from $0$ up to the original exponent $e$.
+
+- For the first prime factor $p_1$: You have $(e_1 + 1)$ choices for the exponent (from $0$ to $e_1$).
+- For the second prime factor $p_2$: You have $(e_2 + 1)$ choices.
+
+**The Formula:**
+
+To find the total number of possible divisors, you multiply the number of choices available for each prime factor (using the counting principle):
+
+$$\text{Total Divisors} = (e_1 + 1) \cdot (e_2 + 1) \cdots (e_k + 1)$$
+
+> **Practical Example (The Number 12):**
+> 
+> - **Factorization:** $12 = 2^2 \cdot 3^1$
+> - **Choices for Factor 2:** The exponent can be $0, 1,$ or $2$ (3 choices).
+> - **Choices for Factor 3:** The exponent can be $0$ or $1$ (2 choices).
+> - **Result:** $3 \times 2 = 6$ total divisors. (These are: 1, 2, 3, 4, 6, and 12).
+
+---
+
+### 2. Sum of Divisors
+
+**The Core Concept:**
+
+If you want to add all these divisors together instead of just counting them, you sum all the possible combinations for each prime factor inside a bracket, and then multiply the brackets. When these brackets are mathematically expanded, they yield the exact sum of all possible divisors.
+
+**The Formula:**
+
+$$\text{Sum} = (1 + p_1 + p_1^2 + \dots + p_1^{e_1}) \cdot (1 + p_2 + \dots + p_2^{e_2}) \cdots$$
+
+**Calculation Speed-Up:**
+
+Each bracket represents a "Geometric Series." Instead of using a loop to sum the values inside each bracket step-by-step, you can use the geometric series formula to calculate it instantly in $O(1)$ time:
+
+$$\text{Sum of one bracket} = \frac{p^{e+1} - 1}{p - 1}$$
+
+---
+
+### 3. Product of Divisors
+
+**The Core Concept:**
+
+Divisors naturally come in pairs. Every divisor $x$ has a complementary divisor $\frac{N}{x}$, and multiplying this pair together always equals the original number $N$.
+
+_(For example, the divisors of 12: $1 \times 12 = 12$, $2 \times 6 = 12$, and $3 \times 4 = 12$)._
+
+Since every pair of divisors produces $N$, multiplying all divisors together is essentially multiplying $N$ by itself for half the total number of divisors.
+
+**The Formula:**
+
+$$\text{Product} = N^{\frac{d}{2}}$$
+
+_(where $d$ is the total number of divisors we calculated in Step 1)._
+
+---
+
+### 4. Count of Coprime Numbers (Euler's Totient Function)
+
+**The Core Concept:**
+
+Often denoted as $\phi(N)$, this function calculates how many integers from $1$ to $N$ are "coprime" (or relatively prime) to $N$. A number is coprime to $N$ if they do not share any common divisors other than 1 (i.e., their Greatest Common Divisor is 1).
+
+Interestingly, this formula depends entirely on the distinct prime factors themselves, completely ignoring their exponents.
+
+**The Formula:**
+
+$$\phi(N) = N \cdot \left(1 - \frac{1}{p_1}\right) \cdot \left(1 - \frac{1}{p_2}\right) \cdots \left(1 - \frac{1}{p_k}\right)$$
