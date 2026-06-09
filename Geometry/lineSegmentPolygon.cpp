@@ -211,3 +211,30 @@ bool inPolygon(vector<pt> p, pt a, bool strict = true) {
     }
     return numCrossings & 1; // inside if odd number of crossings
 }
+T getRegularPolygonArea(int n, T L) {
+    if (n < 3 || L <= 0) {
+        return 0.0;
+    }
+    T pi = acos(-1.0);
+    T area = (n * L * L) / (4.0 * tan(pi / n));
+    return area;
+}
+T getPyramidVolume(T A, T H) {
+    if (A <= 0 || H <= 0) {
+        return 0.0;
+    }
+    return (A * H) / 3.0;
+}
+T getCircumradiusR(int n, T L) {
+    if (n < 3 || L <= 0) {
+        return 0.0;
+    }
+    T pi = acos(-1.0);
+    return L / (2.0 * sin(pi / n));
+}
+T getPyramidHeight(T L, T R) {
+    if (L <= R || L <= 0 || R < 0) {
+        return 0.0;
+    }
+    return sqrt((L * L) - (R * R));
+}
