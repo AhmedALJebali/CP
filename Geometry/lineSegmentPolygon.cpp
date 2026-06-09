@@ -67,9 +67,9 @@ T orientedAngle(pt a, pt b, pt c){
 
 T angleTravelled(pt a, pt b, pt c){
     ld ampli = angle(b - a, c - a);
-    if(orient(a, b, c) > 0) return ampli;
-    if(orient(a, b, c) > 0) return ampli;
-    else return -ampli;
+    if (orient(a, b, c) > 0) return ampli;
+    if (orient(a, b, c) < 0) return -ampli;
+    return 0;
 }
 
 //check p in between angle(bac) counter clockwise
@@ -111,8 +111,8 @@ struct line{
 
 bool inter(line l1, line l2, pt &out) {
     T d = cross(l1.v, l2.v);
-    if (fabs(d) < EPS) return false;
-    out = (l2.v*l1.c- l1.v*l2.c) / d; // requires floating-point coordinates
+    if (sgn(d) == 0) return false;
+    out = (l2.v*l1.c - l1.v*l2.c) / d;
     return true;
 }
 
@@ -126,11 +126,11 @@ line bisector(line l1, line l2, bool interior) {
 //////////////////////////////////////////  SEGMENTS   //////////////////////////////////////////
 
 bool inDisk(pt a, pt b, pt p) {
-    return dot(a-p, b-p) <= EPS;
+    return sgn(dot(a-p, b-p)) <= 0;
 }
 
 bool onSegment(pt a, pt b, pt c){
-    return orient(a, b, c) == 0 && inDisk(a, b, c);
+    return sgn(orient(a,b,c)) == 0 && inDisk(a,b,c);
 }
 
 bool properInter(pt a, pt b, pt c, pt d, pt &out) {
@@ -165,16 +165,21 @@ set<pair<ld,ld>> inters(pt a, pt b, pt c, pt d) {
 
     return s;
 }
+pt closestPointOnSegment(pt a, pt b, pt p) {
+    if (a == b) return a;
 
-ld segPoint(pt a, pt b, pt p) {
-    if (a != b) {
-        line l(a,b);
-        if (l.cmpProj(a,p) && l.cmpProj(p,b)) // if closest to projection
-            return l.dist(p); // output distance to line
-    }
-    return min(abs(p-a), abs(p-b)); // otherwise distance to A or B
+    pt ab = b - a;
+    T t = dot(p - a, ab) / sq(ab);
+
+    if (sgn(t) <= 0) return a;
+    if (sgn(t - 1) >= 0) return b;
+
+    return a + ab * t;
 }
-
+ld segPoint(pt a, pt b, pt p) {
+    pt q = closestPointOnSegment(a, b, p);
+    return abs(p - q);
+}
 ld segSeg(pt a, pt b, pt c, pt d) {
     pt dummy;
     if (properInter(a,b,c,d,dummy))
@@ -296,4 +301,10 @@ pt getOptimalPoint(pt A, pt B, line line_L) {
     inter(path, line_L, intersectionPoint);
 
     return intersectionPoint;
+}
+
+pt gt() {
+    T xx, yy;
+    cin>>xx>>yy;
+    return pt(xx,yy);
 }
