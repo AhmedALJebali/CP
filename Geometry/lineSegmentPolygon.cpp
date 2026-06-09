@@ -211,20 +211,16 @@ bool inPolygon(vector<pt> p, pt a, bool strict = true) {
     }
     return numCrossings & 1; // inside if odd number of crossings
 }
+// 1. Calculate the area of a regular polygon base
 T getRegularPolygonArea(int n, T L) {
     if (n < 3 || L <= 0) {
         return 0.0;
     }
     T pi = acos(-1.0);
-    T area = (n * L * L) / (4.0 * tan(pi / n));
-    return area;
+    return (n * L * L) / (4.0 * tan(pi / n));
 }
-T getPyramidVolume(T A, T H) {
-    if (A <= 0 || H <= 0) {
-        return 0.0;
-    }
-    return (A * H) / 3.0;
-}
+
+// 2. Calculate the circumradius (distance from center to a base vertex)
 T getCircumradiusR(int n, T L) {
     if (n < 3 || L <= 0) {
         return 0.0;
@@ -232,9 +228,40 @@ T getCircumradiusR(int n, T L) {
     T pi = acos(-1.0);
     return L / (2.0 * sin(pi / n));
 }
-T getPyramidHeight(T L, T R) {
-    if (L <= R || L <= 0 || R < 0) {
+
+// 3. Calculate the pyramid's height based on the lateral edge and circumradius
+T getPyramidHeight(T lateral_edge, T R) {
+    if (lateral_edge <= R || lateral_edge <= 0 || R < 0) {
         return 0.0;
     }
-    return sqrt((L * L) - (R * R));
+    return sqrt((lateral_edge * lateral_edge) - (R * R));
 }
+
+// 4. Calculate the final volume based on area and height
+T getPyramidVolume(T A, T H) {
+    if (A <= 0 || H <= 0) {
+        return 0.0;
+    }
+    return (A * H) / 3.0;
+}
+
+// ---------------------------------------------------------
+// The Composite Function
+// Computes the volume of a regular pyramid where ALL edges
+// (both base and lateral) are equal to 's'.
+// ---------------------------------------------------------
+T getEquilateralPyramidVolume(int n, T s) {
+    // Step 1: Get the base area (edge length is s)
+    T baseArea = getRegularPolygonArea(n, s);
+
+    // Step 2: Get the circumradius of the base
+    T circumradius = getCircumradiusR(n, s);
+
+    // Step 3: Get the height
+    // (Since all edges are equal, the lateral edge is also s)
+    T height = getPyramidHeight(s, circumradius);
+
+    // Step 4: Calculate and return the final volume
+    return getPyramidVolume(baseArea, height);
+}
+
