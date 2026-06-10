@@ -163,7 +163,7 @@ ld signedAreaPolygon(vector<pt> p) {
 ld areaPolygon(vector<pt> p) { return fabsl(signedAreaPolygon(p)); }
 
 bool above(pt a, pt p) { return p.y >= a.y; }
-bool crossesRay(pt a, pt p, pt q) { return (above(a, q) - above(a, p)) * orient(a, p, q) > 0; }
+bool crossesRay(pt a, pt p, pt q) { return (above(a, q) - above(a, p)) * sgn(orient(a, p, q)) > 0; }
 
 // Ray-casting algorithm. Even crossings = outside, Odd crossings = inside.
 // Only correct for simple (non-self-intersecting) polygons.
