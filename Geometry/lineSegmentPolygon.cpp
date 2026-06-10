@@ -1,5 +1,5 @@
 const ld EPS = 1e-9;
-const ld PI = acos(-1.0);
+const ld PI = acos(-1.0L);
 
 typedef ld T;
 typedef complex<T> pt;
@@ -33,22 +33,26 @@ T angle(pt v, pt w) { return acos(clamp(dot(v, w) / abs(v) / abs(w), (T)-1.0, (T
 // Returns angle [0, 2PI) moving strictly Counter-Clockwise from AB to AC
 T orientedAngle(pt a, pt b, pt c) {
     ld ampli = angle(b - a, c - a);
-    return orient(a, b, c) > 0 ? ampli : 2 * PI - ampli;
+    // When collinear and same direction ampli=0, orient<=0 would give 2PI. Fix: return 0.
+    if (sgn(ampli) == 0) return 0;
+    return sgn(orient(a, b, c)) > 0 ? ampli : 2 * PI - ampli;
 }
 
 // Returns shortest rotational path (-PI, PI]. + is CCW (Left), - is CW (Right)
 T angleTravelled(pt a, pt b, pt c) {
     ld ampli = angle(b - a, c - a);
-    if (orient(a, b, c) > 0) return ampli;
-    if (orient(a, b, c) < 0) return -ampli;
-    return 0;
+    if (sgn(orient(a, b, c)) > 0) return ampli;
+    if (sgn(orient(a, b, c)) < 0) return -ampli;
+    // Collinear case: same direction => 0, opposite directions => PI
+    return (sgn(dot(b - a, c - a)) >= 0) ? (T)0 : PI;
 }
 
 // Checks if ray AP is strictly between rays AB and AC
 bool inAngle(pt a, pt b, pt c, pt p) {
-    T abp = orient(a, b, p), acp = orient(a, c, p), abc = orient(a, b, c);
-    if (abc < 0) swap(abp, acp);
-    return (abp >= 0 && acp <= 0) ^ (abc < 0);
+    // Normalize: ensure ABC is CCW
+    if (sgn(orient(a, b, c)) < 0) swap(b, c);
+    // P is inside angle ABC iff it is CCW from AB and CW from AC
+    return sgn(orient(a, b, p)) > 0 && sgn(orient(a, c, p)) < 0;
 }
 
 // --- 4. LINES ---
@@ -61,7 +65,7 @@ struct line {
     T side(pt p) { return cross(v, p) - c; } // >0 left, =0 on line, <0 right
     T dist(pt p) { return abs(side(p)) / abs(v); } // Perpendicular distance
     T sqDist(pt p) { return side(p) * side(p) / (T)sq(v); }
-    line prepThrought(pt p) { return {p, p + perp_ccw(v)}; }
+    line prepThrough(pt p) { return {p, p + perp_ccw(v)}; }
     bool cmpProj(pt p, pt q) { return dot(v, p) < dot(v, q); }
     line translate(pt t) { return {v, c + cross(v, t)}; }
     line shiftLeft(T dist) { return {v, c + dist * abs(v)}; }
@@ -79,13 +83,14 @@ bool inter(line l1, line l2, pt &out) {
 
 // Bisector of angle. true = interior angle, false = exterior angle
 line bisector(line l1, line l2, bool interior) {
-    assert(cross(l1.v, l2.v) != 0);
+    assert(sgn(cross(l1.v, l2.v)) != 0); // Lines must not be parallel
     ld sign = interior ? 1 : -1;
     return {l2.v / abs(l2.v) + l1.v / abs(l1.v) * sign, l2.c / abs(l2.v) + l1.c / abs(l1.v) * sign};
 }
 
 // Heron's shortest path: point on line l minimizing distance to A + distance to B
 pt shortestPathPointOnLine(pt a, pt b, line l) {
+    if (sgn(l.side(a)) == 0 && sgn(l.side(b)) == 0) return a; // Both on line: any point works, return A
     if (sgn(l.side(a)) * sgn(l.side(b)) < 0) { // Opposite sides, direct connect
         pt out; inter(line(a, b), l, out); return out;
     }
@@ -110,12 +115,10 @@ bool properInter(pt a, pt b, pt c, pt d, pt &out) {
 // Returns all unique intersection points of segments AB and CD (handles collinear overlap)
 set<pair<ld, ld>> inters(pt a, pt b, pt c, pt d) {
     set<pair<ld, ld>> s; pt out;
-    if (a == c || a == d) s.insert({a.x, a.y});
-    if (b == c || b == d) s.insert({b.x, b.y});
-    if (s.size()) return s; // Share an endpoint
 
     if (properInter(a, b, c, d, out)) return {{out.x, out.y}};
 
+    // Check all four endpoint-on-segment cases (covers shared endpoints and collinear overlap)
     if (onSegment(c, d, a)) s.insert({a.x, a.y});
     if (onSegment(c, d, b)) s.insert({b.x, b.y});
     if (onSegment(a, b, c)) s.insert({c.x, c.y});
@@ -124,7 +127,7 @@ set<pair<ld, ld>> inters(pt a, pt b, pt c, pt d) {
 }
 
 pt closestPointOnSegment(pt a, pt b, pt p) {
-    if (a == b) return a;
+    if (sgn(abs(b - a)) == 0) return a; // Degenerate segment: both endpoints coincide
     pt ab = b - a;
     T t = dot(p - a, ab) / sq(ab); // Projection scalar
     if (sgn(t) <= 0) return a;     // P is behind A
@@ -149,17 +152,21 @@ ld pointRay(pt a, pt b, pt p) {
 // --- 6. POLYGONS & AREA ---
 ld areaTriangle(pt a, pt b, pt c) { return abs(cross(b - a, c - a)) / 2.0; }
 
-// Shoelace formula. Area is negative if polygon is oriented Clockwise.
-ld areaPolygon(vector<pt> p) {
+// Shoelace formula. Returns signed area: positive if CCW, negative if CW.
+ld signedAreaPolygon(vector<pt> p) {
     ld area = 0.0;
     for (int i = 0, n = p.size(); i < n; i++) area += cross(p[i], p[(i + 1) % n]);
-    return abs(area) / 2.0;
+    return area / 2.0;
 }
+
+// Shoelace formula. Always returns positive area regardless of orientation.
+ld areaPolygon(vector<pt> p) { return fabsl(signedAreaPolygon(p)); }
 
 bool above(pt a, pt p) { return p.y >= a.y; }
 bool crossesRay(pt a, pt p, pt q) { return (above(a, q) - above(a, p)) * orient(a, p, q) > 0; }
 
 // Ray-casting algorithm. Even crossings = outside, Odd crossings = inside.
+// Only correct for simple (non-self-intersecting) polygons.
 bool inPolygon(vector<pt> p, pt a, bool strict = true) {
     int numCrossings = 0;
     for (int i = 0, n = p.size(); i < n; i++) {
@@ -175,8 +182,9 @@ T getCircumradiusR(int n, T L) { return (n < 3 || L <= 0) ? 0.0 : L / (2.0 * sin
 T getPyramidHeight(T lateral_edge, T R) { return (lateral_edge <= R || R < 0) ? 0.0 : sqrt((lateral_edge * lateral_edge) - (R * R)); }
 T getPyramidVolume(T A, T H) { return (A <= 0 || H <= 0) ? 0.0 : (A * H) / 3.0; }
 
-// Collapsed equilateral pyramid volume: V = (A*h)/3
-T getEquilateralPyramidVolume(int n, T s) {
+// Regular pyramid where ALL edges (base and lateral) have the same length s.
+// V = (A*h)/3 where A = base area of n-gon with side s, h = height from base to apex.
+T getRegularPyramidVolume(int n, T s) {
     T baseArea = getRegularPolygonArea(n, s);
     T circumradius = getCircumradiusR(n, s);
     T height = getPyramidHeight(s, circumradius);
@@ -194,32 +202,38 @@ int circleLine(pt c, T r, line l, pair<pt, pt>& out) {
     return 1 + sgn(dis);
 }
 
-// Uses Law of Cosines & Projections. Returns 0 (none), 1 (tangent), or 2 (secant)
+// Uses Law of Cosines & Projections. Returns 0 (none/identical), 1 (tangent), or 2 (secant).
+// Requires: r1 > 0, r2 > 0 (point-circles are guarded and return 0).
 int circleCircle(pt c1, T r1, pt c2, T r2, pair<pt, pt>& out) {
     pt v = c2 - c1;
     T dis = abs(v);
-    if (sgn(dis - (r1 + r2)) > 0 || sgn(dis - abs(r1 - r2)) < 0 || sgn(dis) == 0) return 0;
-    T cosTheta = (r1 * r1 + dis * dis - r2 * r2) / (2.0 * r1 * dis);
+    if (sgn(r1) <= 0 || sgn(r2) <= 0) return 0; // Degenerate: point-circle has no intersection
+    // Concentric circles: identical (infinite intersections) or one inside the other
+    if (sgn(dis) == 0) return 0;
+    if (sgn(dis - (r1 + r2)) > 0 || sgn(dis - abs(r1 - r2)) < 0) return 0;
+    T cosTheta = clamp((r1 * r1 + dis * dis - r2 * r2) / (2.0 * r1 * dis), (T)-1.0, (T)1.0);
     T d_P = r1 * cosTheta; // Distance to projection
     pt p = c1 + (v / dis) * d_P; // Chord midpoint
-    T h_sq = r1 * r1 - d_P * d_P; // Squared half-chord length
-    T h = (sgn(h_sq) <= 0) ? 0 : sqrt(h_sq);
+    T h_sq = max((T)0, r1 * r1 - d_P * d_P); // Clamp to avoid sqrt of negative
+    T h = sqrt(h_sq);
     pt perp = perp_ccw(v) / dis; // Perpendicular direction
     out = {p + perp * h, p - perp * h};
     return (sgn(dis - (r1 + r2)) == 0 || sgn(dis - abs(r1 - r2)) == 0) ? 1 : 2;
 }
 
-// Calculates area of two overlapping circular segments
+// Calculates area of two overlapping circular segments.
+// Requires: r1 > 0, r2 > 0 (point-circles are guarded and return 0).
 T circleIntersectionArea(pt c1, T r1, pt c2, T r2) {
+    if (sgn(r1) <= 0 || sgn(r2) <= 0) return 0.0; // Degenerate: point-circle has zero area
     T d = abs(c2 - c1);
     if (sgn(d - (r1 + r2)) >= 0) return 0.0; // Disjoint
     if (sgn(d - abs(r1 - r2)) <= 0) return PI * min(r1, r2) * min(r1, r2); // Strictly inside
 
     // Central angles using Law of Cosines
-    T cos_alpha1 = (r1 * r1 + d * d - r2 * r2) / (2.0 * r1 * d);
-    T cos_alpha2 = (r2 * r2 + d * d - r1 * r1) / (2.0 * r2 * d);
-    T alpha1 = 2.0 * acos(clamp(cos_alpha1, (T)-1.0, (T)1.0));
-    T alpha2 = 2.0 * acos(clamp(cos_alpha2, (T)-1.0, (T)1.0));
+    T cos_alpha1 = clamp((r1 * r1 + d * d - r2 * r2) / (2.0 * r1 * d), (T)-1.0, (T)1.0);
+    T cos_alpha2 = clamp((r2 * r2 + d * d - r1 * r1) / (2.0 * r2 * d), (T)-1.0, (T)1.0);
+    T alpha1 = 2.0 * acos(cos_alpha1);
+    T alpha2 = 2.0 * acos(cos_alpha2);
 
     // Area = Area of sector - Area of triangle
     T area1 = 0.5 * r1 * r1 * (alpha1 - sin(alpha1));
