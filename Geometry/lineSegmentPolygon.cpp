@@ -19,8 +19,8 @@ pt gt() { T xx, yy; cin >> xx >> yy; return pt(xx, yy); } // Fast read
 pt perp_ccw(pt p) { return {-p.y, p.x}; } // Rotate 90 deg counter-clockwise
 pt perp_cw(pt p) { return {p.y, -p.x}; }  // Rotate 90 deg clockwise
 pt translate(pt v, pt p) { return p + v; }
-pt scale(pt c, ld factor, pt p) { return c + (p - c) * factor; }
-pt rot(pt p, pt c, ld a) { return c + (p - c) * pt(cos(a), sin(a)); } // Complex mult is 2D rot
+pt scale(pt c, T factor, pt p) { return c + (p - c) * factor; }
+pt rot(pt p, pt c, T a) { return c + (p - c) * pt(cos(a), sin(a)); } // Complex mult is 2D rot
 // Maps point r from coordinate system (p, q) to (fp, fq) using complex division
 pt linearTransfo(pt p, pt q, pt r, pt fp, pt fq) { return fp + (r - p) * (fq - fp) / (q - p); }
 
@@ -32,7 +32,7 @@ T angle(pt v, pt w) { return acos(clamp(dot(v, w) / abs(v) / abs(w), (T)-1.0, (T
 
 // Returns angle [0, 2PI) moving strictly Counter-Clockwise from AB to AC
 T orientedAngle(pt a, pt b, pt c) {
-    ld ampli = angle(b - a, c - a);
+    T ampli = angle(b - a, c - a);
     // When collinear and same direction ampli=0, orient<=0 would give 2PI. Fix: return 0.
     if (sgn(ampli) == 0) return 0;
     return sgn(orient(a, b, c)) > 0 ? ampli : 2 * PI - ampli;
@@ -40,7 +40,7 @@ T orientedAngle(pt a, pt b, pt c) {
 
 // Returns shortest rotational path (-PI, PI]. + is CCW (Left), - is CW (Right)
 T angleTravelled(pt a, pt b, pt c) {
-    ld ampli = angle(b - a, c - a);
+    T ampli = angle(b - a, c - a);
     if (sgn(orient(a, b, c)) > 0) return ampli;
     if (sgn(orient(a, b, c)) < 0) return -ampli;
     // Collinear case: same direction => 0, opposite directions => PI
@@ -84,7 +84,7 @@ bool inter(line l1, line l2, pt &out) {
 // Bisector of angle. true = interior angle, false = exterior angle
 line bisector(line l1, line l2, bool interior) {
     assert(sgn(cross(l1.v, l2.v)) != 0); // Lines must not be parallel
-    ld sign = interior ? 1 : -1;
+    T sign = interior ? 1 : -1;
     return {l2.v / abs(l2.v) + l1.v / abs(l1.v) * sign, l2.c / abs(l2.v) + l1.c / abs(l1.v) * sign};
 }
 
@@ -112,9 +112,8 @@ bool properInter(pt a, pt b, pt c, pt d, pt &out) {
     return false;
 }
 
-// Returns all unique intersection points of segments AB and CD (handles collinear overlap)
-set<pair<ld, ld>> inters(pt a, pt b, pt c, pt d) {
-    set<pair<ld, ld>> s; pt out;
+set<pair<T, T>> inters(pt a, pt b, pt c, pt d) {
+    set<pair<T, T>> s; pt out;
 
     if (properInter(a, b, c, d, out)) return {{out.x, out.y}};
 
@@ -135,32 +134,68 @@ pt closestPointOnSegment(pt a, pt b, pt p) {
     return a + ab * t;             // P is alongside AB
 }
 
-ld segPoint(pt a, pt b, pt p) { return abs(p - closestPointOnSegment(a, b, p)); }
+T segPoint(pt a, pt b, pt p) { return abs(p - closestPointOnSegment(a, b, p)); }
 
 // Shortest distance between two line segments AB and CD
-ld segSeg(pt a, pt b, pt c, pt d) {
+T segSeg(pt a, pt b, pt c, pt d) {
     pt dummy;
     if (properInter(a, b, c, d, dummy)) return 0; // Intersecting segments distance is 0
     return min({segPoint(a, b, c), segPoint(a, b, d), segPoint(c, d, a), segPoint(c, d, b)});
 }
-
-ld pointRay(pt a, pt b, pt p) {
-    if (sgn(dot(p - a, b - a)) <= 0) return sqrt(dot(p - a, p - a)); // P behind ray origin
-    return abs(cross(b - a, p - a)) / sqrt(dot(b - a, b - a));       // Perpendicular drop
+// Finds if a ray (start 'a', through 'b') hits a line 'l'
+bool rayLineInter(pt a, pt b, line l) {
+    line rayAsLine(a, b);
+    pt out;
+    if (!inter(rayAsLine, l, out)) {
+        return false;
+    }
+    return sgn(dot(out - a, b - a)) >= 0;
+}
+T rayLine(pt a, pt b, line l){
+    if (rayLineInter(a,b,l))return 0;
+    return l.dist(a);
+}
+// get the intersection of two rays if exists
+bool rayInter(pt a, pt b, pt c, pt d, pt& p) {
+    line l1(a, b), l2(c, d);
+    if (!inter(l1, l2, p)) {
+        return false;
+    }
+    if (l1.cmpProj(a, p) && l2.cmpProj(c, p)) {
+        return true;
+    }
+    return false;
+}
+// get the dist from a point to a ray
+T rayDist(pt a, pt b, pt p) {
+    line l(a, b);
+    if (l.cmpProj(a, p)) {
+        return l.dist(p);
+    }
+    return abs(p - a);
+}
+// returns the minumum distance between two rays
+T rayRayDist(pt b1, pt e1, pt b2, pt e2) {
+    pt p;
+    if (rayInter(b1, e1, b2, e2, p)) {
+        return 0;
+    } else {
+        return min(rayDist(b1, e1, b2), rayDist(b2, e2, b1));
+    }
 }
 
 // --- 6. POLYGONS & AREA ---
-ld areaTriangle(pt a, pt b, pt c) { return abs(cross(b - a, c - a)) / 2.0; }
+T areaTriangle(pt a, pt b, pt c) { return abs(cross(b - a, c - a)) / 2.0; }
 
 // Shoelace formula. Returns signed area: positive if CCW, negative if CW.
-ld signedAreaPolygon(vector<pt> p) {
-    ld area = 0.0;
+T signedAreaPolygon(vector<pt> p) {
+    T area = 0.0;
     for (int i = 0, n = p.size(); i < n; i++) area += cross(p[i], p[(i + 1) % n]);
     return area / 2.0;
 }
 
 // Shoelace formula. Always returns positive area regardless of orientation.
-ld areaPolygon(vector<pt> p) { return fabsl(signedAreaPolygon(p)); }
+T areaPolygon(vector<pt> p) { return fabsl(signedAreaPolygon(p)); }
 
 bool above(pt a, pt p) { return p.y >= a.y; }
 bool crossesRay(pt a, pt p, pt q) { return (above(a, q) - above(a, p)) * sgn(orient(a, p, q)) > 0; }
@@ -174,6 +209,27 @@ bool inPolygon(vector<pt> p, pt a, bool strict = true) {
         numCrossings += crossesRay(a, p[i], p[(i + 1) % n]);
     }
     return numCrossings & 1;
+}
+// Winding number algorithm for Point in Polygon.
+// Returns 0 if outside, non-zero if inside.
+// Often preferred over ray-casting for complex/self-intersecting polygons.
+int windingNumber(vector<pt>& p, pt a) {
+    int wn = 0;
+    for (int i = 0, n = p.size(); i < n; i++) {
+        pt p1 = p[i], p2 = p[(i + 1) % n];
+
+        // Optional: If you need to strictly identify boundary points
+        if (onSegment(p1, p2, a)) return -1;
+
+        if (sgn(p1.y - a.y) <= 0) { // Start point at or below horizontal ray
+            // Upward crossing and point 'a' is strictly left of the edge
+            if (sgn(p2.y - a.y) > 0 && sgn(orient(p1, p2, a)) > 0) wn++;
+        } else {                    // Start point above horizontal ray
+            // Downward crossing and point 'a' is strictly right of the edge
+            if (sgn(p2.y - a.y) <= 0 && sgn(orient(p1, p2, a)) < 0) wn--;
+        }
+    }
+    return wn;
 }
 
 // --- 7. PYRAMIDS & 3D ---
@@ -239,4 +295,65 @@ T circleIntersectionArea(pt c1, T r1, pt c2, T r2) {
     T area1 = 0.5 * r1 * r1 * (alpha1 - sin(alpha1));
     T area2 = 0.5 * r2 * r2 * (alpha2 - sin(alpha2));
     return area1 + area2;
+}
+pt circumCenter(pt a, pt b, pt c) {
+    b = b - a, c = c - a;
+    T d = 2 * cross(b, c);
+    pt ans = perp_ccw(b * dot(c, c) - c * dot(b, b)) / d;
+    return a + ans;
+}
+// Finds the tangent lines between two circles. Returns the number of tangents (0, 1, or 2).
+// 'inner' = true for inner tangents, false for outer tangents.
+int tangents(pt o1, T r1, pt o2, T r2, bool inner, vector<pair<pt, pt>>& out) {
+    if (inner) r2 = -r2;
+    pt d = o2 - o1;
+    T dr = r1 - r2;
+    T d2 = sq(d);
+    T h2 = d2 - dr * dr;
+    // If concentric/identical or no valid tangents exist
+    if (sgn(d2) == 0 || sgn(h2) < 0) return 0;
+    T h = sqrt(max((T)0.0, h2));
+    for (T sign : {-1, 1}) {
+        pt v = (d * dr + perp_ccw(d) * h * sign) / d2;
+        out.push_back({o1 + v * r1, o2 + v * r2});
+        // If circles touch at exactly one point, there is only one tangent
+        if (sgn(h2) == 0) break;
+    }
+    return 1 + (sgn(h2) > 0);
+}
+// Returns the number of boundary lattice points on the segment AB.
+// Does NOT count point A itself to avoid double-counting when iterating over a polygon.
+int segmentBoundaryPoints(pt a, pt b) {
+    // llround safely converts ld to exact integers, preventing truncation errors
+    int dx = abs(llround(a.x) - llround(b.x));
+    int dy = abs(llround(a.y) - llround(b.y));
+    return gcd(dx, dy);
+}
+// Returns the total number of boundary lattice points (B) of a polygon
+int polygonBoundaryPoints(const vector<pt>& p) {
+    int B = 0;
+    int n = p.size();
+    for (int i = 0; i < n; i++) {
+        B += segmentBoundaryPoints(p[i], p[(i + 1) % n]);
+    }
+    return B;
+}
+// Calculates EXACT double area, bypassing the float division in areaPolygon()
+int polygonDoubleAreaExact(const vector<pt>& p) {
+    int doubleA = 0;
+    int n = p.size();
+    for (int i = 0; i < n; i++) {
+        // Rounding coordinates guarantees exact 64-bit integer cross products
+        int x1 = llround(p[i].x), y1 = llround(p[i].y);
+        int x2 = llround(p[(i + 1) % n].x), y2 = llround(p[(i + 1) % n].y);
+        doubleA += (x1 * y2) - (x2 * y1);
+    }
+    return abs(doubleA);
+}
+// Returns the number of strictly interior lattice points (I) using Pick's Theorem.
+// Formula: A = I + B/2 - 1  ==>  2A = 2I + B - 2  ==>  I = (2A - B + 2) / 2
+int polygonInteriorPoints(const vector<pt>& p) {
+    int doubleA = polygonDoubleAreaExact(p);
+    int B = polygonBoundaryPoints(p);
+    return (doubleA - B + 2) / 2;
 }
