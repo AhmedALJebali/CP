@@ -363,22 +363,24 @@ bool isValidTriangleLD(ld a, ld b, ld c) {
 }
 struct LineKey {
     ld a, b, c;
+    LineKey(ld a, ld b, ld c) : a(a), b(b), c(c) {
+        normalize();
+    }
     void normalize() {
         ld z = sqrt(a * a + b * b + c * c);
-        if (sgn(z) == 0) return;
-        a /= z;
-        b /= z;
-        c /= z;
-        if (sgn(a) < 0 || (sgn(a) == 0 && sgn(b) < 0)) {
-            a = -a;
-            b = -b;
-            c = -c;
+        if (sgn(z) > 0) {
+            a /= z; b /= z; c /= z;
+        }
+        if (sgn(a) == -1 || (sgn(a) == 0 && sgn(b) == -1)) {
+            a = -a; b = -b; c = -c;
         }
     }
-
     bool operator<(const LineKey& o) const {
-        if (sgn(a - o.a)) return a < o.a;
-        if (sgn(b - o.b)) return b < o.b;
-        return c < o.c;
+        int cmp = sgn(a - o.a);
+        if (cmp != 0) return cmp == -1;
+        cmp = sgn(b - o.b);
+        if (cmp != 0) return cmp == -1;
+        return sgn(c - o.c) == -1;
     }
 };
+
