@@ -357,3 +357,7 @@ int polygonInteriorPoints(const vector<pt>& p) {
     int B = polygonBoundaryPoints(p);
     return (doubleA - B + 2) / 2;
 }
+bool isValidTriangleLD(ld a, ld b, ld c) {
+  if (sgn(a) <= 0 || sgn(b) <= 0 || sgn(c) <= 0) return false;
+  return (sgn(a + b - c) > 0) && (sgn(a + c - b) > 0) && (sgn(b + c - a) > 0);
+}
