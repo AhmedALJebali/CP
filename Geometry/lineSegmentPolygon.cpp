@@ -362,24 +362,23 @@ bool isValidTriangleLD(ld a, ld b, ld c) {
   return (sgn(a + b - c) > 0) && (sgn(a + c - b) > 0) && (sgn(b + c - a) > 0);
 }
 struct LineKey {
-  ld a, b, c; // ax + by = c
-  bool operator<(const LineKey& other) const {
-    if (a != other.a) return a < other.a;
-    if (b != other.b) return b < other.b;
-    return c < other.c;
-  }
+    ld a, b, c;
+    void normalize() {
+        ld z = sqrt(a * a + b * b + c * c);
+        if (sgn(z) == 0) return;
+        a /= z;
+        b /= z;
+        c /= z;
+        if (sgn(a) < 0 || (sgn(a) == 0 && sgn(b) < 0)) {
+            a = -a;
+            b = -b;
+            c = -c;
+        }
+    }
+
+    bool operator<(const LineKey& o) const {
+        if (sgn(a - o.a)) return a < o.a;
+        if (sgn(b - o.b)) return b < o.b;
+        return c < o.c;
+    }
 };
-
-LineKey getKey(pt p, pt q) {
-  ld a = imag(q - p);
-  ld b = -real(q - p);
-  ld c = a * real(p) + b * imag(p);
-
-  ld norm = hypot(a, b);
-  a /= norm; b /= norm; c /= norm;
-
-  if (a < 0 || (fabsl(a) < EPS && b < 0)) {
-    a = -a; b = -b; c = -c;
-  }
-  return {a, b, c};
-}
