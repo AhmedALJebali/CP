@@ -361,3 +361,25 @@ bool isValidTriangleLD(ld a, ld b, ld c) {
   if (sgn(a) <= 0 || sgn(b) <= 0 || sgn(c) <= 0) return false;
   return (sgn(a + b - c) > 0) && (sgn(a + c - b) > 0) && (sgn(b + c - a) > 0);
 }
+struct LineKey {
+  ld a, b, c; // ax + by = c
+  bool operator<(const LineKey& other) const {
+    if (a != other.a) return a < other.a;
+    if (b != other.b) return b < other.b;
+    return c < other.c;
+  }
+};
+
+LineKey getKey(pt p, pt q) {
+  ld a = imag(q - p);
+  ld b = -real(q - p);
+  ld c = a * real(p) + b * imag(p);
+
+  ld norm = hypot(a, b);
+  a /= norm; b /= norm; c /= norm;
+
+  if (a < 0 || (fabsl(a) < EPS && b < 0)) {
+    a = -a; b = -b; c = -c;
+  }
+  return {a, b, c};
+}
