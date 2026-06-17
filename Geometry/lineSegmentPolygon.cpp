@@ -18,7 +18,7 @@ pt gt() { T xx, yy; cin >> xx >> yy; return pt(xx, yy); } // Fast read
 // --- 2. TRANSFORMATIONS ---
 pt perp_ccw(pt p) { return {-p.y, p.x}; } // Rotate 90 deg counter-clockwise
 pt perp_cw(pt p) { return {p.y, -p.x}; }  // Rotate 90 deg clockwise
-pt translate(pt v, pt p) { return p + v; }
+pt translate(pt p, pt v) { return p + v; }
 pt scale(pt c, T factor, pt p) { return c + (p - c) * factor; }
 pt rot(pt p, pt c, T a) { return c + (p - c) * pt(cos(a), sin(a)); } // Complex mult is 2D rot
 // Maps point r from coordinate system (p, q) to (fp, fq) using complex division
