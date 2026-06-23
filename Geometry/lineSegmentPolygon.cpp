@@ -381,4 +381,120 @@ struct LineKey {
         return sgn(c - o.c) == -1;
     }
 };
+// Length of the circular arc from 'a' to 'b'
+T arcLength(pt c, T r, pt a, pt b) {
+    T theta = orientedAngle(c, a, b);
+    return r * theta;
+}
+
+// Area of the pie-shaped sector defined by the arc
+T arcSectorArea(pt c, T r, pt a, pt b) {
+    T theta = orientedAngle(c, a, b);
+    return 0.5L * r * r * theta;
+}
+
+// Area of the circular segment
+T arcSegmentArea(pt c, T r, pt a, pt b) {
+    T theta = orientedAngle(c, a, b);
+    return 0.5L * r * r * (theta - sin(theta));
+}
+
+bool samePoint(pt a, pt b) {
+    return abs(a - b) <= EPS;
+}
+
+// Checks if point 'p' lies on the boundary of the CCW arc from 'a' to 'b'
+bool isPointOnArc(pt c, T r, pt a, pt b, pt p) {
+    if (sgn(abs(p - c) - r) != 0) return false;
+
+    T arc = orientedAngle(c, a, b);
+    T pos = orientedAngle(c, a, p);
+
+    return pos <= arc + EPS;
+}
+
+// Returns the intersection points between an arc and a line
+vector<pt> arcLineInter(pt c, T r, pt a, pt b, line l) {
+    pair<pt, pt> out;
+    int cnt = circleLine(c, r, l, out);
+
+    vector<pt> res;
+
+    if (cnt == 0) return res;
+
+    if (isPointOnArc(c, r, a, b, out.first))
+        res.push_back(out.first);
+
+    if (cnt > 1 &&
+        !samePoint(out.first, out.second) &&
+        isPointOnArc(c, r, a, b, out.second))
+        res.push_back(out.second);
+
+    return res;
+}
+
+// Returns the intersection points between two arcs
+vector<pt> arcArcInter(pt c1, T r1, pt a1, pt b1,
+                       pt c2, T r2, pt a2, pt b2) {
+
+    pair<pt, pt> out;
+    int cnt = circleCircle(c1, r1, c2, r2, out);
+
+    vector<pt> res;
+
+    auto add = [&](pt p) {
+        if (!isPointOnArc(c1, r1, a1, b1, p)) return;
+        if (!isPointOnArc(c2, r2, a2, b2, p)) return;
+
+        for (auto &q : res)
+            if (samePoint(q, p))
+                return;
+
+        res.push_back(p);
+    };
+
+    if (cnt >= 1) add(out.first);
+    if (cnt >= 2) add(out.second);
+
+    return res;
+}
+
+// Returns the shortest distance from a point to an arc
+T distPointArc(pt c, T r, pt a, pt b, pt p) {
+
+    if (sgn(abs(p - c)) == 0)
+        return r;
+
+    pt proj = c + (p - c) * (r / abs(p - c));
+
+    if (isPointOnArc(c, r, a, b, proj))
+        return fabsl(abs(p - c) - r);
+
+    return min(abs(p - a), abs(p - b));
+}
+
+// Returns the AABB of a CCW arc
+pair<pt, pt> arcBoundingBox(pt c, T r, pt a, pt b) {
+    T minX = min(a.x, b.x);
+    T maxX = max(a.x, b.x);
+    T minY = min(a.y, b.y);
+    T maxY = max(a.y, b.y);
+    vector<pt> extremes = {
+        {c.x + r, c.y},
+        {c.x, c.y + r},
+        {c.x - r, c.y},
+        {c.x, c.y - r}
+    };
+
+    for (auto &e : extremes) {
+        if (isPointOnArc(c, r, a, b, e)) {
+            minX = min(minX, e.x);
+            maxX = max(maxX, e.x);
+            minY = min(minY, e.y);
+            maxY = max(maxY, e.y);
+        }
+    }
+    return {{minX, minY}, {maxX, maxY}};
+}
+
 
