@@ -28,24 +28,19 @@ bool samePoint(pt a, pt b) {
 // ======================
 
 struct line {
-    pt v; 
-    T c; // cross(v, p) = c
-
-    line(pt v, T c) : v(v), c(c) {}
-    line(T a, T b, T _c) : v(b, -a), c(_c) {}
-    line(pt p, pt q) : v(q - p), c(cross(v, p)) {}
-
-    T side(pt p) const { return cross(v, p) - c; }
-    T dist(pt p) const { return abs(side(p)) / abs(v); }
-    T sqDist(pt p) const { return side(p) * side(p) / sq(v); }
-
-    line translate(pt t) const { return {v, c + cross(v, t)}; }
-    line shiftLeft(T dist) const { return {v, c + dist * abs(v)}; }
-
-    pt proj(pt p) const { return p - perp_ccw(v) * side(p) / sq(v); }
-    pt refl(pt p) const { return p - perp_ccw(v) * (T)2.0L * side(p) / sq(v); }
-
-    bool cmpProj(pt p, pt q) const { return dot(v, p) < dot(v, q); }
+    pt v; T c;
+    line(pt v, T c) : v(v), c(c) {} // From direction vector v and offset c
+    line(T a, T b, T _c) : v(b, -a), c(_c) {} // From equation ax + by = c
+    line(pt p, pt q) : v(q - p), c(cross(v, p)) {} // From two points P and Q
+    T side(pt p) { return cross(v, p) - c; } // >0 left, =0 on line, <0 right
+    T dist(pt p) { return abs(side(p)) / abs(v); } // Perpendicular distance
+    T sqDist(pt p) { return side(p) * side(p) / (T)sq(v); }
+    line prepThrough(pt p) { return {p, p + perp_ccw(v)}; }
+    bool cmpProj(pt p, pt q) { return dot(v, p) < dot(v, q); }
+    line translate(pt t) { return {v, c + cross(v, t)}; }
+    line shiftLeft(T dist) { return {v, c + dist * abs(v)}; }
+    pt proj(pt p) { return p - perp_ccw(v) * side(p) / sq(v); } // Drop perpendicular
+    pt refl(pt p) { return p - perp_ccw(v) * (T)2.0 * side(p) / sq(v); } // Reflect point
 };
 
 bool inter(line l1, line l2, pt &out) {
