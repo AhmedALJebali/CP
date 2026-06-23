@@ -91,15 +91,15 @@ void sortCounterClockwise(vector<pt>& pts, pt center) {
 // --- CLOSEST PAIR OF POINTS O(N log N) ---
 // ==========================================
 
-// Custom comparators for the complex<T> point type
+// Custom comparators for the complex<T> point type using strictly sgn()
 bool cmpX(const pt& a, const pt& b) {
-    if (sgn(a.x - b.x) != 0) return a.x < b.x;
-    return a.y < b.y;
+    if (sgn(a.x - b.x) != 0) return sgn(a.x - b.x) < 0;
+    return sgn(a.y - b.y) < 0;
 }
 
 bool cmpY(const pt& a, const pt& b) {
-    if (sgn(a.y - b.y) != 0) return a.y < b.y;
-    return a.x < b.x;
+    if (sgn(a.y - b.y) != 0) return sgn(a.y - b.y) < 0;
+    return sgn(a.x - b.x) < 0;
 }
 
 // Returns a pair containing:
@@ -120,7 +120,7 @@ pair<pair<pt, pt>, T> closestPair(vector<pt> pts) {
     // Helper to conditionally update the minimum distance
     auto upd = [&](const pt& a, const pt& b) {
         T d = abs(a - b);
-        if (d < best_dist) {
+        if (sgn(d - best_dist) < 0) {
             best_dist = d;
             best_pair = {a, b};
         }
@@ -158,10 +158,10 @@ pair<pair<pt, pt>, T> closestPair(vector<pt> pts) {
         // Build the central strip of points within `best_dist` of the dividing line
         int tsz = 0;
         for (int i = l; i < r; ++i) {
-            if (abs(pts[i].x - mid_pt.x) < best_dist) {
+            if (sgn(abs(pts[i].x - mid_pt.x) - best_dist) < 0) {
                 // Check against previously added points in the strip.
                 // Geometrically proven to run at most 6 times per point!
-                for (int j = tsz - 1; j >= 0 && pts[i].y - t[j].y < best_dist; --j) {
+                for (int j = tsz - 1; j >= 0 && sgn(pts[i].y - t[j].y - best_dist) < 0; --j) {
                     upd(pts[i], t[j]);
                 }
                 t[tsz++] = pts[i];
