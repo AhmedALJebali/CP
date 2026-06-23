@@ -1,19 +1,17 @@
 const ld EPS = 1e-9;
-const ld PI = acos(-1.0L);
-
 typedef ld T;
 typedef complex<T> pt;
 #define x real()
 #define y imag()
 
-// ==========================================
-// --- 1. BASIC VECTOR OPERATIONS ---
-// ==========================================
+// ======================
+// Basic math
+// ======================
 
+T sq(pt p) { return p.x * p.x + p.y * p.y; }
 T dot(pt v, pt w) { return v.x * w.x + v.y * w.y; }
 T cross(pt v, pt w) { return v.x * w.y - v.y * w.x; }
 pt perp_ccw(pt p) { return {-p.y, p.x}; }
-T sq(pt p) { return p.x * p.x + p.y * p.y; }
 
 int sgn(T val) {
     if (val > EPS) return 1;
@@ -21,69 +19,34 @@ int sgn(T val) {
     return 0;
 }
 
-// ==========================================
-// --- 2. LINE STRUCTURE & UTILITIES ---
-// ==========================================
+bool samePoint(pt a, pt b) {
+    return abs(a - b) <= EPS;
+}
+
+// ======================
+// Line
+// ======================
 
 struct line {
-
-    pt v; // Direction vector of the line
-    T c;  // The scalar offset (c = cross(v, p) for any point p on the line)
-
-    // The equation cross(v, p) = c defines all points p on the line.
-    // Geometrically: cross(v, p) calculates the signed area of the parallelogram 
-    // formed by the direction vector v and point p. This area is constant 
-    // for all points p on the same line.
+    pt v; 
+    T c; // cross(v, p) = c
 
     line(pt v, T c) : v(v), c(c) {}
-    
-    // Constructing from general form ax + by = c:
-    // A vector parallel to the line (ax + by = c) is (b, -a).
-    // The constant c remains the same.
     line(T a, T b, T _c) : v(b, -a), c(_c) {}
-    
-    // Constructing from two points p and q:
-    // Direction vector v is simply the difference (q - p).
     line(pt p, pt q) : v(q - p), c(cross(v, p)) {}
 
     T side(pt p) const { return cross(v, p) - c; }
-
     T dist(pt p) const { return abs(side(p)) / abs(v); }
     T sqDist(pt p) const { return side(p) * side(p) / sq(v); }
-
-    line perpThrough(pt p) const { return {p, p + perp_ccw(v)}; }
-
-    bool cmpProj(pt p, pt q) const { return dot(v, p) < dot(v, q); }
 
     line translate(pt t) const { return {v, c + cross(v, t)}; }
     line shiftLeft(T dist) const { return {v, c + dist * abs(v)}; }
 
     pt proj(pt p) const { return p - perp_ccw(v) * side(p) / sq(v); }
     pt refl(pt p) const { return p - perp_ccw(v) * (T)2.0L * side(p) / sq(v); }
+
+    bool cmpProj(pt p, pt q) const { return dot(v, p) < dot(v, q); }
 };
-struct LineKey {
-    T a, b, c;
-    LineKey(T a, T b, T c) : a(a), b(b), c(c) {
-        normalize();
-    }
-    void normalize() {
-        ld z = sqrt(a*a + b*b);
-        a /= z; b /= z; c /= z;
-        if (a < 0 || (a == 0 && b < 0)) {
-            a = -a; b = -b; c = -c;
-        }
-    }
-    bool operator<(const LineKey& o) const {
-        int cmp = sgn(a - o.a);
-        if (cmp != 0) return cmp == -1;
-        cmp = sgn(b - o.b);
-        if (cmp != 0) return cmp == -1;
-        return sgn(c - o.c) == -1;
-    }
-};
-// ==========================================
-// --- 3. INTERSECTIONS & SPECIAL POINTS ---
-// ==========================================
 
 bool inter(line l1, line l2, pt &out) {
     T d = cross(l1.v, l2.v);
@@ -92,49 +55,126 @@ bool inter(line l1, line l2, pt &out) {
     return true;
 }
 
-line bisector(line l1, line l2, bool interior) {
-    assert(sgn(cross(l1.v, l2.v)) != 0);
-    T s = interior ? 1.0L : -1.0L;
-    return {
-        l2.v / abs(l2.v) + l1.v / abs(l1.v) * s,
-        l2.c / abs(l2.v) + l1.c / abs(l1.v) * s
-    };
+// ======================
+// Segment helpers
+// ======================
+
+bool inDisk(pt a, pt b, pt p) {
+    return sgn(dot(a - p, b - p)) <= 0;
 }
 
-pt shortestPathPointOnLine(pt a, pt b, line l) {
-    T sa = l.side(a), sb = l.side(b);
+bool onSegment(pt a, pt b, pt p) {
+    return sgn(cross(b - a, p - a)) == 0 && inDisk(a, b, p);
+}
 
-    if (sgn(sa) == 0 && sgn(sb) == 0) return a;
-    if (sgn(sa) == 0) return a;
-    if (sgn(sb) == 0) return b;
+// Strictly inside both segments
+bool properInter(pt a, pt b, pt c, pt d, pt &out) {
+    T oa = cross(d - c, a - c);
+    T ob = cross(d - c, b - c);
+    T oc = cross(b - a, c - a);
+    T od = cross(b - a, d - a);
 
-    if (sgn(sa) * sgn(sb) < 0) {
-        pt out;
-        inter(line(a, b), l, out);
-        return out;
+    if (sgn(oa) * sgn(ob) < 0 && sgn(oc) * sgn(od) < 0) {
+        out = (a * ob - b * oa) / (ob - oa);
+        return true;
+    }
+    return false;
+}
+
+// All intersection points of two segments (0/1/2 points)
+vector<pt> segInter(pt a, pt b, pt c, pt d) {
+    vector<pt> res;
+    pt out;
+
+    auto add = [&](pt p) {
+        for (auto &q : res) if (samePoint(p, q)) return;
+        res.push_back(p);
+    };
+
+    if (properInter(a, b, c, d, out)) {
+        add(out);
+        return res;
     }
 
-    pt out;
-    inter(line(l.refl(a), b), l, out);
-    return out;
+    if (onSegment(c, d, a)) add(a);
+    if (onSegment(c, d, b)) add(b);
+    if (onSegment(a, b, c)) add(c);
+    if (onSegment(a, b, d)) add(d);
+
+    return res;
 }
 
-// ==========================================
-// --- 4. RAYS ---
-// ==========================================
+pt closestPointOnSegment(pt a, pt b, pt p) {
+    if (sgn(abs(b - a)) == 0) return a; // degenerate segment
+    pt ab = b - a;
+    T t = dot(p - a, ab) / sq(ab);
+    if (sgn(t) <= 0) return a;
+    if (sgn(t - 1) >= 0) return b;
+    return a + ab * t;
+}
 
+T segPoint(pt a, pt b, pt p) {
+    return abs(p - closestPointOnSegment(a, b, p));
+}
+
+T segSeg(pt a, pt b, pt c, pt d) {
+    pt dummy;
+    if (properInter(a, b, c, d, dummy)) return 0;
+    return min({segPoint(a, b, c), segPoint(a, b, d),
+                segPoint(c, d, a), segPoint(c, d, b)});
+}
+
+// ======================
+// Ray helpers
+// ======================
+
+bool onRay(pt a, pt b, pt p) {
+    return sgn(cross(b - a, p - a)) == 0 && sgn(dot(p - a, b - a)) >= 0;
+}
+
+// Ray AB intersects line l?
 bool rayLineInter(pt a, pt b, line l) {
-    line rayAsLine(a, b);
+    line r(a, b);
     pt out;
-    if (inter(rayAsLine, l, out)) {
+
+    if (inter(r, l, out)) {
         return sgn(dot(out - a, b - a)) >= 0;
     }
-    // Parallel case: ray may lie on the line
+
+    // Parallel case: intersection exists only if collinear
     return sgn(l.side(a)) == 0;
 }
 
 T rayLine(pt a, pt b, line l) {
-    if (rayLineInter(a, b, l)) return 0.0L;
+    if (rayLineInter(a, b, l)) return 0;
     return l.dist(a);
 }
 
+// One common point of two rays if they intersect.
+// For collinear overlapping rays, returns one valid common endpoint.
+bool rayInter(pt a, pt b, pt c, pt d, pt &p) {
+    line l1(a, b), l2(c, d);
+
+    if (inter(l1, l2, p)) {
+        return onRay(a, b, p) && onRay(c, d, p);
+    }
+
+    if (sgn(l1.side(c)) != 0) return false; // parallel but not collinear
+
+    if (onRay(a, b, c)) { p = c; return true; }
+    if (onRay(c, d, a)) { p = a; return true; }
+
+    return false;
+}
+
+T rayDist(pt a, pt b, pt p) {
+    line l(a, b);
+    if (sgn(dot(p - a, b - a)) >= 0) return l.dist(p);
+    return abs(p - a);
+}
+
+T rayRayDist(pt a1, pt b1, pt a2, pt b2) {
+    pt p;
+    if (rayInter(a1, b1, a2, b2, p)) return 0;
+    return min(rayDist(a1, b1, a2), rayDist(a2, b2, a1));
+}
