@@ -26,11 +26,24 @@ int sgn(T val) {
 // ==========================================
 
 struct line {
-    pt v;
-    T c; // cross(v, p) = c
+
+    pt v; // Direction vector of the line
+    T c;  // The scalar offset (c = cross(v, p) for any point p on the line)
+
+    // The equation cross(v, p) = c defines all points p on the line.
+    // Geometrically: cross(v, p) calculates the signed area of the parallelogram 
+    // formed by the direction vector v and point p. This area is constant 
+    // for all points p on the same line.
 
     line(pt v, T c) : v(v), c(c) {}
+    
+    // Constructing from general form ax + by = c:
+    // A vector parallel to the line (ax + by = c) is (b, -a).
+    // The constant c remains the same.
     line(T a, T b, T _c) : v(b, -a), c(_c) {}
+    
+    // Constructing from two points p and q:
+    // Direction vector v is simply the difference (q - p).
     line(pt p, pt q) : v(q - p), c(cross(v, p)) {}
 
     T side(pt p) const { return cross(v, p) - c; }
