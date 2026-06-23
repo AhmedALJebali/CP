@@ -49,6 +49,22 @@ bool inter(line l1, line l2, pt &out) {
     out = (l2.v * l1.c - l1.v * l2.c) / d;
     return true;
 }
+// Bisector of angle. true = interior angle, false = exterior angle
+line bisector(line l1, line l2, bool interior) {
+    assert(sgn(cross(l1.v, l2.v)) != 0); // Lines must not be parallel
+    T sign = interior ? 1 : -1;
+    return {l2.v / abs(l2.v) + l1.v / abs(l1.v) * sign, l2.c / abs(l2.v) + l1.c / abs(l1.v) * sign};
+}
+// Heron's shortest path: point on line l minimizing distance to A + distance to B
+pt shortestPathPointOnLine(pt a, pt b, line l) {
+    if (sgn(l.side(a)) == 0 && sgn(l.side(b)) == 0) return a; // Both on line: any point works, return A
+    if (sgn(l.side(a)) * sgn(l.side(b)) < 0) { // Opposite sides, direct connect
+        pt out; inter(line(a, b), l, out); return out;
+    }
+    pt out; inter(line(l.refl(a), b), l, out); return out; // Same side, reflect and connect
+}
+
+
 
 // ======================
 // Segment helpers
