@@ -406,11 +406,9 @@ bool samePoint(pt a, pt b) {
 // Checks if point 'p' lies on the boundary of the CCW arc from 'a' to 'b'
 bool isPointOnArc(pt c, T r, pt a, pt b, pt p) {
     if (sgn(abs(p - c) - r) != 0) return false;
-
     T arc = orientedAngle(c, a, b);
     T pos = orientedAngle(c, a, p);
-
-    return pos <= arc + EPS;
+    return sgn(pos - arc) <= 0;
 }
 
 // Returns the intersection points between an arc and a line
