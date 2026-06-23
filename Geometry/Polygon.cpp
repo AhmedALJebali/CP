@@ -168,6 +168,43 @@ pt polygonCentroid(const vector<pt>& p) {
 
     return c / (3.0L * A2);
 }
+// Returns the number of boundary lattice points on the segment AB.
+// Does NOT count point A itself to avoid double-counting when iterating over a polygon.
+int segmentBoundaryPoints(pt a, pt b) {
+    // llround safely converts ld to exact integers, preventing truncation errors
+    int dx = abs(llround(a.x) - llround(b.x));
+    int dy = abs(llround(a.y) - llround(b.y));
+    return gcd(dx, dy);
+}
+// Returns the total number of boundary lattice points (B) of a polygon
+int polygonBoundaryPoints(const vector<pt>& p) {
+    int B = 0;
+    int n = p.size();
+    for (int i = 0; i < n; i++) {
+        B += segmentBoundaryPoints(p[i], p[(i + 1) % n]);
+    }
+    return B;
+}
+// Calculates EXACT double area, bypassing the float division in areaPolygon()
+int polygonDoubleAreaExact(const vector<pt>& p) {
+    int doubleA = 0;
+    int n = p.size();
+    for (int i = 0; i < n; i++) {
+        // Rounding coordinates guarantees exact 64-bit integer cross products
+        int x1 = llround(p[i].x), y1 = llround(p[i].y);
+        int x2 = llround(p[(i + 1) % n].x), y2 = llround(p[(i + 1) % n].y);
+        doubleA += (x1 * y2) - (x2 * y1);
+    }
+    return abs(doubleA);
+}
+// Returns the number of strictly interior lattice points (I) using Pick's Theorem.
+// Formula: A = I + B/2 - 1  ==>  2A = 2I + B - 2  ==>  I = (2A - B + 2) / 2
+int polygonInteriorPoints(const vector<pt>& p) {
+    int doubleA = polygonDoubleAreaExact(p);
+    int B = polygonBoundaryPoints(p);
+    return (doubleA - B + 2) / 2;
+}
+
 // =====================
 // Polygon cut by directed line AB
 // Keeps left side (including the line)
