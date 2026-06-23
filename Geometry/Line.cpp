@@ -193,23 +193,26 @@ T rayRayDist(pt a1, pt b1, pt a2, pt b2) {
 // ==========================================
 // . 1D SEGMENT UNION (SWEEP LINE)
 // ==========================================
-T segmentUnionLength(const vector<pair<T, T>>& segments) {
+T segmentUnionLength(vector<pair<T, T>>& segments) {
+    if (segments.empty()) return 0.0L;
+
     struct Event {
-        T pos;    // Renamed from 'x' to 'pos' to avoid #define x real() macro collision
-        int type; 
-        
+        T pos;
+        int type;
+
         bool operator<(const Event& o) const {
             if (sgn(pos - o.pos) != 0) return pos < o.pos;
             return type > o.type; 
         }
     };
+
     vector<Event> events;
     events.reserve(segments.size() * 2);
 
     for (const auto& seg : segments) {
         T l = min(seg.first, seg.second);
         T r = max(seg.first, seg.second);
-        if (sgn(r - l) == 0) continue; 
+        if (sgn(r - l) == 0) continue;
 
         events.push_back({l, 1});
         events.push_back({r, -1});
@@ -217,20 +220,18 @@ T segmentUnionLength(const vector<pair<T, T>>& segments) {
 
     sort(events.begin(), events.end());
 
-    T result = 0.0L;
+    T total_length = 0.0L;
     int active_segments = 0;
 
     for (size_t i = 0; i < events.size(); i++) {
         if (i > 0 && active_segments > 0) {
-            T dist = events[i].pos - events[i - 1].pos;
-            result += max((T)0.0L, dist); 
+            total_length += events[i].pos - events[i - 1].pos;
         }
         active_segments += events[i].type;
     }
 
-    return result;
+    return total_length;
 }
-
 
 // ==========================================
 // --- O(N log N) SEGMENT INTERSECTION ---
