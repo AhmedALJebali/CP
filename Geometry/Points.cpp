@@ -86,3 +86,89 @@ void sortCounterClockwise(vector<pt>& pts, pt center) {
         return sgn(sq(a - center) - sq(b - center)) < 0;
     });
 }
+
+// ==========================================
+// --- CLOSEST PAIR OF POINTS O(N log N) ---
+// ==========================================
+
+// Custom comparators for the complex<T> point type
+bool cmpX(const pt& a, const pt& b) {
+    if (sgn(a.x - b.x) != 0) return a.x < b.x;
+    return a.y < b.y;
+}
+
+bool cmpY(const pt& a, const pt& b) {
+    if (sgn(a.y - b.y) != 0) return a.y < b.y;
+    return a.x < b.x;
+}
+
+// Returns a pair containing:
+// 1. A pair of the two closest points {pt1, pt2}
+// 2. The minimum distance between them
+pair<pair<pt, pt>, T> closestPair(vector<pt> pts) {
+    int n = pts.size();
+    if (n < 2) return {{pt(0, 0), pt(0, 0)}, 0.0L};
+
+    // Initial sort by X coordinate
+    sort(pts.begin(), pts.end(), cmpX);
+
+    // Initialize with the distance between the first two points
+    // This perfectly avoids using arbitrary "infinity" values
+    T best_dist = abs(pts[0] - pts[1]);
+    pair<pt, pt> best_pair = {pts[0], pts[1]};
+
+    // Helper to conditionally update the minimum distance
+    auto upd = [&](const pt& a, const pt& b) {
+        T d = abs(a - b);
+        if (d < best_dist) {
+            best_dist = d;
+            best_pair = {a, b};
+        }
+    };
+
+    vector<pt> t(n); // Pre-allocated temporary array for the merge step and strip
+
+    // Recursive Divide and Conquer using a lambda
+    auto solve = [&](auto& self, int l, int r) -> void {
+        // Base case: 3 or fewer points. Brute force and sort by Y.
+        if (r - l <= 3) {
+            for (int i = l; i < r; ++i) {
+                for (int j = i + 1; j < r; ++j) {
+                    upd(pts[i], pts[j]);
+                }
+            }
+            sort(pts.begin() + l, pts.begin() + r, cmpY); 
+            return;
+        }
+
+        int mid = (l + r) >> 1;
+        pt mid_pt = pts[mid];
+
+        // Solve left and right halves
+        self(self, l, mid);
+        self(self, mid, r);
+
+        // Trick to keep it strictly O(N log N): 
+        // Merge the two Y-sorted halves in O(N) time instead of re-sorting
+        merge(pts.begin() + l, pts.begin() + mid,
+              pts.begin() + mid, pts.begin() + r,
+              t.begin(), cmpY);
+        copy(t.begin(), t.begin() + (r - l), pts.begin() + l);
+
+        // Build the central strip of points within `best_dist` of the dividing line
+        int tsz = 0;
+        for (int i = l; i < r; ++i) {
+            if (abs(pts[i].x - mid_pt.x) < best_dist) {
+                // Check against previously added points in the strip.
+                // Geometrically proven to run at most 6 times per point!
+                for (int j = tsz - 1; j >= 0 && pts[i].y - t[j].y < best_dist; --j) {
+                    upd(pts[i], t[j]);
+                }
+                t[tsz++] = pts[i];
+            }
+        }
+    };
+
+    solve(solve, 0, n);
+    return {best_pair, best_dist};
+}
