@@ -61,7 +61,26 @@ struct line {
     pt proj(pt p) const { return p - perp_ccw(v) * side(p) / sq(v); }
     pt refl(pt p) const { return p - perp_ccw(v) * (T)2.0L * side(p) / sq(v); }
 };
-
+struct LineKey {
+    T a, b, c;
+    LineKey(T a, T b, T c) : a(a), b(b), c(c) {
+        normalize();
+    }
+    void normalize() {
+        ld z = sqrt(a*a + b*b);
+        a /= z; b /= z; c /= z;
+        if (a < 0 || (a == 0 && b < 0)) {
+            a = -a; b = -b; c = -c;
+        }
+    }
+    bool operator<(const LineKey& o) const {
+        int cmp = sgn(a - o.a);
+        if (cmp != 0) return cmp == -1;
+        cmp = sgn(b - o.b);
+        if (cmp != 0) return cmp == -1;
+        return sgn(c - o.c) == -1;
+    }
+};
 // ==========================================
 // --- 3. INTERSECTIONS & SPECIAL POINTS ---
 // ==========================================
@@ -118,3 +137,4 @@ T rayLine(pt a, pt b, line l) {
     if (rayLineInter(a, b, l)) return 0.0L;
     return l.dist(a);
 }
+
