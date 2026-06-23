@@ -189,3 +189,44 @@ T rayRayDist(pt a1, pt b1, pt a2, pt b2) {
     if (rayInter(a1, b1, a2, b2, p)) return 0;
     return min(rayDist(a1, b1, a2), rayDist(a2, b2, a1));
 }
+
+// ==========================================
+// . 1D SEGMENT UNION (SWEEP LINE)
+// ==========================================
+T segmentUnionLength(const vector<pair<T, T>>& segments) {
+    struct Event {
+        T pos;    // Renamed from 'x' to 'pos' to avoid #define x real() macro collision
+        int type; 
+        
+        bool operator<(const Event& o) const {
+            if (sgn(pos - o.pos) != 0) return pos < o.pos;
+            return type > o.type; 
+        }
+    };
+    vector<Event> events;
+    events.reserve(segments.size() * 2);
+
+    for (const auto& seg : segments) {
+        T l = min(seg.first, seg.second);
+        T r = max(seg.first, seg.second);
+        if (sgn(r - l) == 0) continue; 
+
+        events.push_back({l, 1});
+        events.push_back({r, -1});
+    }
+
+    sort(events.begin(), events.end());
+
+    T result = 0.0L;
+    int active_segments = 0;
+
+    for (size_t i = 0; i < events.size(); i++) {
+        if (i > 0 && active_segments > 0) {
+            T dist = events[i].pos - events[i - 1].pos;
+            result += max((T)0.0L, dist); 
+        }
+        active_segments += events[i].type;
+    }
+
+    return result;
+}
