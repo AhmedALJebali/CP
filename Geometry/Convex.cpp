@@ -7,28 +7,55 @@ typedef complex<T> pt;
 #define y imag()
 
 // =====================
-// Basic vector helpers
+// Basic operations
 // =====================
+T dot(pt v, pt w) { return v.x * w.x + v.y * w.y; } // >0 acute, 0 right, <0 obtuse
+T cross(pt v, pt w) { return v.x * w.y - v.y * w.x; } // >0 CCW, <0 CW. Mag = Area
+int sgn(T val) { if(val > EPS) return 1; if(val < -EPS) return -1; return 0; } // Float safe
 
-T dot(pt a, pt b) { return a.x * b.x + a.y * b.y; }
-T cross(pt a, pt b) { return a.x * b.y - a.y * b.x; }
-T sq(pt p) { return p.x * p.x + p.y * p.y; }
-pt perp_ccw(pt p) { return {-p.y, p.x}; }
+// --- 3. ANGLES ---
+T toDegrees(T rad) { return rad * (180.0 / PI); }
+T toRadians(T deg) { return deg * (PI / 180.0); }
+T orient(pt a, pt b, pt c) { return cross(b - a, c - a); } // Orientation of C relative to AB
+T angle(pt v, pt w) { return acos(clamp(dot(v, w) / abs(v) / abs(w), (T)-1.0, (T)1.0)); }
 
-int sgn(T val) {
-    if (val > EPS) return 1;
-    if (val < -EPS) return -1;
-    return 0;
+// Returns angle [0, 2PI) moving strictly Counter-Clockwise from AB to AC
+T orientedAngle(pt a, pt b, pt c) {
+    T ampli = angle(b - a, c - a);
+    // When collinear and same direction ampli=0, orient<=0 would give 2PI. Fix: return 0.
+    if (sgn(ampli) == 0) return 0;
+    return sgn(orient(a, b, c)) > 0 ? ampli : 2 * PI - ampli;
 }
 
-bool samePoint(pt a, pt b) {
+// Returns shortest rotational path (-PI, PI]. + is CCW (Left), - is CW (Right)
+T angleTravelled(pt a, pt b, pt c) {
+    T ampli = angle(b - a, c - a);
+    if (sgn(orient(a, b, c)) > 0) return ampli;
+    if (sgn(orient(a, b, c)) < 0) return -ampli;
+    // Collinear case: same direction => 0, opposite directions => PI
+    return (sgn(dot(b - a, c - a)) >= 0) ? (T)0 : PI;
+}
+
+bool same(pt a, pt b) {
     return abs(a - b) <= EPS;
 }
 
-bool onSegment(pt a, pt b, pt p) {
-    return sgn(cross(b - a, p - a)) == 0 && sgn(dot(a - p, b - p)) <= 0;
+T dist2(pt a, pt b) {
+    return norm(a - b);
 }
 
+// =====================
+// Collinearity / segment
+// =====================
+
+bool collinear(pt a, pt b, pt c) {
+    return sgn(orient(a,b,c)) == 0;
+}
+
+bool onSegment(pt a, pt b, pt p) {
+    return sgn(orient(a,b,p)) == 0 &&
+           sgn(dot(p-a, p-b)) <= 0;
+}
 // =====================
 // Convex polygon basics
 // =====================
@@ -86,56 +113,90 @@ void reorderConvex(vector<pt>& p) {
         if (sgn(p[i].y - p[pos].y) < 0 ||
             (sgn(p[i].y - p[pos].y) == 0 && sgn(p[i].x - p[pos].x) < 0)) {
             pos = i;
-        }
+            }
     }
     rotate(p.begin(), p.begin() + pos, p.end());
 }
 
 // =====================
-// Convex hull (Monotonic chain)
-// Returns CCW hull without repeated last point
+// Convex hull (Andrew style)
 // =====================
 
-vector<pt> convexHull(vector<pt> p, bool strict = false) {
-    sort(p.begin(), p.end(), [](const pt& a, const pt& b) {
-        if (sgn(a.x - b.x) != 0) return a.x < b.x;
-        return a.y < b.y;
+bool cw(pt a, pt b, pt c, bool col) {
+    int o = sgn(orient(a,b,c));
+    return o < 0 || (col && o == 0);
+}
+
+void convex_hull(vector<pt>& a, bool include_collinear = false) {
+    pt p0 = *min_element(a.begin(), a.end(), [](pt a, pt b) {
+        return make_pair(a.y, a.x) < make_pair(b.y, b.x);
     });
-
-    p.erase(unique(p.begin(), p.end(), [](const pt& a, const pt& b) {
-        return samePoint(a, b);
-    }), p.end());
-
-    int n = (int)p.size();
-    if (n <= 1) return p;
-
-    vector<pt> lo, up;
-    for (auto &pti : p) {
-        while ((int)lo.size() >= 2) {
-            T cr = cross(lo.back() - lo[(int)lo.size() - 2], pti - lo.back());
-            if (strict ? sgn(cr) <= 0 : sgn(cr) < 0) lo.pop_back();
-            else break;
-        }
-        lo.push_back(pti);
+    sort(a.begin(), a.end(), [&p0](const pt& a, const pt& b) {
+        int o = sgn(orient(p0, a, b));
+        if (o == 0)
+            return (p0.x-a.x)*(p0.x-a.x) + (p0.y-a.y)*(p0.y-a.y)
+                   < (p0.x-b.x)*(p0.x-b.x) + (p0.y-b.y)*(p0.y-b.y);
+        return o < 0;
+    });
+    if (include_collinear) {
+        int i = (int)a.size()-1;
+        while (i >= 0 && collinear(p0, a[i], a.back())) i--;
+        reverse(a.begin()+i+1, a.end());
     }
 
-    for (int i = n - 1; i >= 0; i--) {
-        auto pti = p[i];
-        while ((int)up.size() >= 2) {
-            T cr = cross(up.back() - up[(int)up.size() - 2], pti - up.back());
-            if (strict ? sgn(cr) <= 0 : sgn(cr) < 0) up.pop_back();
-            else break;
-        }
-        up.push_back(pti);
+    vector<pt> st;
+    for (int i = 0; i < (int)a.size(); i++) {
+        while (st.size() > 1 && !cw(st[st.size()-2], st.back(), a[i], include_collinear))
+            st.pop_back();
+        if(st.empty() || a[i] != st.back())
+            st.push_back(a[i]);
     }
 
-    lo.pop_back();
-    up.pop_back();
-    vector<pt> hull = lo;
-    hull.insert(hull.end(), up.begin(), up.end());
+    if (include_collinear == false && st.size() == 2 && st[0] == st[1])
+        st.pop_back();
 
-    if (hull.empty() && !p.empty()) hull = p; // all points identical
-    return hull;
+    a = st;
+}
+
+
+// =====================
+// reorder polygon
+// =====================
+void reorder_polygon(vector<pt>& P) {
+    int pos = 0;
+    for (int i = 1; i < (int)P.size(); i++) {
+        if (imag(P[i]) < imag(P[pos]) ||
+           (imag(P[i]) == imag(P[pos]) && real(P[i]) < real(P[pos])))
+            pos = i;
+    }
+    rotate(P.begin(), P.begin() + pos, P.end());
+}
+
+// =====================
+// Minkowski sum (FIXED)
+// =====================
+
+vector<pt> minkowski(vector<pt> P, vector<pt> Q) {
+    reorder_polygon(P);
+    reorder_polygon(Q);
+
+    int n = P.size(), m = Q.size();
+    P.push_back(P[0]);
+    Q.push_back(Q[0]);
+
+    vector<pt> res;
+    int i = 0, j = 0;
+
+    while (i < n || j < m) {
+        res.push_back(P[i] + Q[j]);
+
+        T cr = cross(P[i+1] - P[i], Q[j+1] - Q[j]);
+
+        if (j == m || (i < n && cr >= 0)) i++;
+        if (i == n || (j < m && cr <= 0)) j++;
+    }
+
+    return res;
 }
 
 // =====================
@@ -148,7 +209,7 @@ vector<pt> convexHull(vector<pt> p, bool strict = false) {
 bool pointInConvexPolygon(vector<pt> poly, pt q, bool strict = true) {
     int n = (int)poly.size();
     if (n == 0) return false;
-    if (n == 1) return !strict && samePoint(poly[0], q);
+    if (n == 1) return !strict && !sgn(abs(poly[0]- q));
     if (n == 2) return onSegment(poly[0], poly[1], q) && !strict;
 
     if (sgn(cross(poly[1] - poly[0], q - poly[0])) < 0) return false;
@@ -156,7 +217,6 @@ bool pointInConvexPolygon(vector<pt> poly, pt q, bool strict = true) {
 
     if (onSegment(poly[0], poly[1], q) || onSegment(poly[0], poly[n - 1], q))
         return !strict;
-
     int l = 1, r = n - 1;
     while (r - l > 1) {
         int m = (l + r) / 2;
@@ -169,7 +229,6 @@ bool pointInConvexPolygon(vector<pt> poly, pt q, bool strict = true) {
     if (sgn(cr) == 0) return !strict;
     return true;
 }
-
 // =====================
 // Diameter of convex polygon (Rotating calipers)
 // Returns farthest pair and their distance
@@ -191,7 +250,7 @@ pair<pair<pt, pt>, T> convexDiameter(const vector<pt>& poly) {
         while (abs(cross(poly[ni] - poly[i], poly[(j + 1) % n] - poly[j])) >
                abs(cross(poly[ni] - poly[i], poly[j] - poly[i]))) {
             j = (j + 1) % n;
-        }
+               }
 
         T d1 = abs(poly[i] - poly[j]);
         if (d1 > best) best = d1, ans = {poly[i], poly[j]};
@@ -201,4 +260,122 @@ pair<pair<pt, pt>, T> convexDiameter(const vector<pt>& poly) {
     }
 
     return {ans, best};
+}
+
+// =====================
+// Halfplane
+// =====================
+
+struct Halfplane {
+    pt p, pq;
+    T angle;
+
+    Halfplane() {}
+    Halfplane(pt a, pt b) : p(a), pq(b-a) {
+        angle = atan2(imag(pq), real(pq));
+    }
+
+    bool out(pt r) {
+        return cross(pq, r - p) < -EPS;
+    }
+
+    bool operator<(const Halfplane& other) const {
+        return angle < other.angle;
+    }
+
+    friend pt inter(const Halfplane& a, const Halfplane& b) {
+        T A = cross(b.p - a.p, b.pq) / cross(a.pq, b.pq);
+        return a.p + a.pq * A;
+    }
+};
+
+// =====================
+// Half-plane intersection
+// =====================
+
+vector<pt> hp_intersect(vector<Halfplane> H) {
+    const T INF = 1e9;
+
+    vector<pt> box = {
+        {INF, INF}, {-INF, INF},
+        {-INF, -INF}, {INF, -INF}
+    };
+
+    for (int i = 0; i < 4; i++)
+        H.emplace_back(box[i], box[(i+1)%4]);
+
+    sort(H.begin(), H.end());
+
+    deque<Halfplane> dq;
+
+    for (auto &h : H) {
+        while (dq.size() > 1 && h.out(inter(dq[dq.size()-1], dq[dq.size()-2])))
+            dq.pop_back();
+
+        while (dq.size() > 1 && h.out(inter(dq[0], dq[1])))
+            dq.pop_front();
+
+        dq.push_back(h);
+    }
+
+    while (dq.size() > 2 &&
+           dq.front().out(inter(dq[dq.size()-1], dq[dq.size()-2])))
+        dq.pop_back();
+
+    while (dq.size() > 2 &&
+           dq.back().out(inter(dq[0], dq[1])))
+        dq.pop_front();
+
+    if (dq.size() < 3) return {};
+
+    vector<pt> ret;
+    for (int i = 0; i < (int)dq.size(); i++)
+        ret.push_back(inter(dq[i], dq[(i+1)%dq.size()]));
+
+    return ret;
+}
+
+// =====================
+// antipodal pairs
+// =====================
+
+vector<pair<int,int>> all_anti_podal(int n, vector<pt>& p) {
+    vector<pair<int,int>> res;
+    vector<bool> vis(n,false);
+
+    auto nx = [&](int i){ return (i+1)%n; };
+    auto pv = [&](int i){ return (i-1+n)%n; };
+
+    for (int i = 0, j = 0; i < n; i++) {
+        pt base = p[nx(i)] - p[i];
+
+        while (j == i || j == nx(i) ||
+              sgn(cross(base, p[nx(j)] - p[j])) ==
+              sgn(cross(base, p[j] - p[pv(j)]))) {
+            j = nx(j);
+        }
+
+        if (vis[i]) continue;
+        vis[i] = true;
+
+        res.push_back({i,j});
+        res.push_back({nx(i),j});
+    }
+
+    return res;
+}
+
+// =====================
+// max distance polygon-polygon
+// =====================
+
+T maximum_dist_from_polygon_to_polygon(vector<pt>& u, vector<pt>& v) {
+    int n = u.size(), m = v.size();
+    T ans = 0;
+
+    for (int i = 0; i < n; i++)
+        for (int j = 0; j < m; j++)
+            ans = max(ans, dist2(u[i], v[j]));
+
+    return sqrt(ans);
 }
