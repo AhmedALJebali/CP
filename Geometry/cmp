@@ -1,0 +1,10 @@
+// comp 
+struct cmp {
+    bool operator()(const pt& p1, const pt& p2) const {
+        if (sgn(p1.x - p2.x)) return sgn(p1.x - p2.x)<0;
+        if (sgn(p1.y - p2.y)) return sgn(p1.y - p2.y)<0;
+        return false;
+    }
+};
+set<pt, cmp> unique_points;
+map<pt, int, cmp> un;
