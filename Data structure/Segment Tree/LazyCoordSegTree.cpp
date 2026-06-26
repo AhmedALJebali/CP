@@ -1,3 +1,4 @@
+//  https://codeforces.com/gym/699485/problem/K
 // 1. Coordinate Compression Struct
 struct CoordCompressor {
     vector<int> coords;
