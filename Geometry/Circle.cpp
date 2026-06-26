@@ -154,3 +154,45 @@ int tangents(pt o1, T r1, pt o2, T r2, bool inner, vector<pair<pt, pt>>& out) {
 
     return 1 + (sgn(h2) > 0);
 }
+enum CircleRelation {
+    IDENTICAL,          // Same circle
+    DISJOINT,           // No intersection
+    EXTERNAL_TANGENT,   // One external tangent point
+    INTERSECT,          // Two intersection points
+    INTERNAL_TANGENT,   // One internal tangent point
+    C1_INSIDE_C2,       // Circle 1 completely inside Circle 2
+    C2_INSIDE_C1        // Circle 2 completely inside Circle 1
+};
+
+CircleRelation circleRelation(pt c1, ld r1, pt c2, ld r2) {
+    ld d = abs(c1 - c2);
+
+    // Same center
+    if (sgn(d) == 0) {
+        if (sgn(r1 - r2) == 0)
+            return IDENTICAL;
+
+        return (r1 < r2 ? C1_INSIDE_C2 : C2_INSIDE_C1);
+    }
+
+    // Separate
+    if (sgn(d - (r1 + r2)) > 0)
+        return DISJOINT;
+
+    // External tangent
+    if (sgn(d - (r1 + r2)) == 0)
+        return EXTERNAL_TANGENT;
+
+    // One circle completely inside the other
+    ld diff = fabsl(r1 - r2);
+
+    if (sgn(d - diff) < 0)
+        return (r1 < r2 ? C1_INSIDE_C2 : C2_INSIDE_C1);
+
+    // Internal tangent
+    if (sgn(d - diff) == 0)
+        return (r1 < r2 ? C1_INSIDE_C2 : C2_INSIDE_C1);
+
+    // Two intersection points
+    return INTERSECT;
+}
