@@ -34,9 +34,10 @@ T angle(pt v, pt w) {
 
 // Returns angle in [0, 2PI)
 T orientedAngle(pt a, pt b, pt c) {
-    T ampli = angle(b - a, c - a);
-    if (sgn(ampli) == 0) return 0;
-    return sgn(orient(a, b, c)) > 0 ? ampli : 2.0L * PI - ampli;
+  if (orient(a,b,c) >= 0)
+    return angle(b-a, c-a);
+  else
+    return 2*PI - angle(b-a, c-a);
 }
 
 // Minimal line struct for circle/arc intersections
