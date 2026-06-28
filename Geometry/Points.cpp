@@ -32,12 +32,11 @@ T angle(pt v, pt w) { return acos(clamp(dot(v, w) / abs(v) / abs(w), (T)-1.0, (T
 
 // Returns angle [0, 2PI) moving strictly Counter-Clockwise from AB to AC
 T orientedAngle(pt a, pt b, pt c) {
-    T ampli = angle(b - a, c - a);
-    // When collinear and same direction ampli=0, orient<=0 would give 2PI. Fix: return 0.
-    if (sgn(ampli) == 0) return 0;
-    return sgn(orient(a, b, c)) > 0 ? ampli : 2 * PI - ampli;
+  if (orient(a,b,c) >= 0)
+    return angle(b-a, c-a);
+  else
+    return 2*PI - angle(b-a, c-a);
 }
-
 // Returns shortest rotational path (-PI, PI]. + is CCW (Left), - is CW (Right)
 T angleTravelled(pt a, pt b, pt c) {
     T ampli = angle(b - a, c - a);
