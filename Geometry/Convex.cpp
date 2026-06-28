@@ -26,9 +26,10 @@ T orient(pt a, pt b, pt c) { return cross(b - a, c - a); }
 T angle(pt v, pt w) { return acos(clamp(dot(v, w) / abs(v) / abs(w), (T)-1.0, (T)1.0)); }
 
 T orientedAngle(pt a, pt b, pt c) {
-    T ampli = angle(b - a, c - a);
-    if (sgn(ampli) == 0) return 0;
-    return sgn(orient(a, b, c)) > 0 ? ampli : 2.0L * PI - ampli;
+  if (orient(a,b,c) >= 0)
+    return angle(b-a, c-a);
+  else
+    return 2*PI - angle(b-a, c-a);
 }
 
 T angleTravelled(pt a, pt b, pt c) {
