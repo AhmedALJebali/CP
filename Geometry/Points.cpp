@@ -49,10 +49,9 @@ T angleTravelled(pt a, pt b, pt c) {
 
 // Checks if ray AP is strictly between rays AB and AC
 bool inAngle(pt a, pt b, pt c, pt p) {
-    // Normalize: ensure ABC is CCW
-    if (sgn(orient(a, b, c)) < 0) swap(b, c);
-    // P is inside angle ABC iff it is CCW from AB and CW from AC
-    return sgn(orient(a, b, p)) > 0 && sgn(orient(a, c, p)) < 0;
+  T abp = orient(a, b, p), acp = orient(a, c, p), abc = orient(a, b, c);
+  if (abc < 0) swap(abp, acp);
+  return (abp >= 0 && acp <= 0) ^ (abc < 0);
 }
 bool inDisk(pt a, pt b, pt p) { return sgn(dot(a - p, b - p)) <= 0; }
 bool onSegment(pt a, pt b, pt c) { return sgn(orient(a, b, c)) == 0 && inDisk(a, b, c); }
