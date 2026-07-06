@@ -1,13 +1,12 @@
-const int MOD = 1e9 + 7;
-
-// Upgraded to support R x C dimensions
+const int MOD=1e9+7;
+const int INF=2e18;
 struct Matrix {
   vector<vector<int>> mat;
   int r, c;
   Matrix(int rows, int cols) : r(rows), c(cols) {
     mat.assign(r, vector<int>(c, 0));
   }
-  // Identity matrix must be square (n x n)
+ 
   static Matrix identity(int n) {
     Matrix res(n, n);
     for (int i = 0; i < n; i++) {
@@ -15,29 +14,35 @@ struct Matrix {
     }
     return res;
   }
+ 
+  void set(int i, int j, int x) {
+    mat[i][j] += (x % MOD + MOD) % MOD;
+  }
+ 
+  int get(int i, int j) const {
+    return mat[i][j];
+  }
 };
-
-// Extracted mul function that handles A(r x c) * B(c x k)
-Matrix mul(const Matrix& a, const Matrix& b) {
+Matrix mul(const Matrix &a, const Matrix &b) {
   Matrix res(a.r, b.c);
   for (int i = 0; i < a.r; i++) {
-    for (int k = 0; k < a.c; k++) {
-      if (a.mat[i][k] == 0) continue; // Optimization
-      for (int j = 0; j < b.c; j++) {
-        res.mat[i][j] = (res.mat[i][j] + a.mat[i][k] * b.mat[k][j]) % MOD;
+    for (int j = 0; j < b.c; j++) {
+      int sum = 0;
+      for (int k = 0; k < a.c; k++) {
+        sum = (sum + a.get(i, k) * b.get(k, j) % MOD) % MOD;
       }
+      res.set(i, j, sum);
     }
   }
   return res;
 }
-
-// Power function uses the new mul()
-Matrix power(Matrix a, int b) {
+Matrix Fast(Matrix a, int base) {
   Matrix res = Matrix::identity(a.r);
-  while (b > 0) {
-    if (b & 1) res = mul(res, a);
+  while (base) {
+    if (base & 1) res = mul(res, a);
     a = mul(a, a);
-    b >>= 1;
+    base >>= 1;
   }
   return res;
 }
+ 
