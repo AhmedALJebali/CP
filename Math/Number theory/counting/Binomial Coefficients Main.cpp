@@ -39,3 +39,11 @@ int nPrMod(int n, int r) {
     if (r < 0 || r > n) return 0;
     return 1LL * fact[n] * inv_fact[n - r] % MOD;
 }
+int nCr_large_n(int n, int r) {
+  if (r < 0 || r > n) return 0;
+  int num = 1;
+  for (int i = 0; i < r; i++) {
+    num = (num * ((n - i) % MOD)) % MOD;
+  }
+  return (num * inv_fact[r]) % MOD;
+}
