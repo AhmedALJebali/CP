@@ -47,3 +47,18 @@ int nCr_large_n(int n, int r) {
   }
   return (num * inv_fact[r]) % MOD;
 }
+int count_permutations(const vector<int>& box_capacities, int k) {
+  vector<int> dp(k + 1, 0);
+  dp[0] = 1;
+  for (int capacity : box_capacities) {
+    vector<int> next_dp(k + 1, 0);
+    for (int j = 0; j <= k; ++j) {
+      int limit = min(capacity, j);
+      for (int x = 0; x <= limit; ++x) {
+        next_dp[j] += dp[j - x] * nCrMod(j,x);
+      }
+    }
+    dp = next_dp;
+  }
+  return dp[k];
+}
