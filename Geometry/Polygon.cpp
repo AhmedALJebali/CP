@@ -228,3 +228,16 @@ vector<pt> polygonCut(const vector<pt>& p, pt a, pt b) {
     }
     return q;
 }
+pt centroid(const vector<pt> &p) {
+    int n = (int)p.size();
+    pt c(0, 0);
+    T sum = 0;
+    for (int i = 0; i < n; i++) {
+        int j = (i + 1) % n;
+        T cr = cross(p[i], p[j]);
+        sum += cr;
+        c += (p[i] + p[j]) * cr;
+    }
+    if (abs(sum) < EPS) return {0, 0}; 
+    return c / (3.0L * sum);
+}
