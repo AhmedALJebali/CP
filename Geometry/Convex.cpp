@@ -142,27 +142,41 @@ void convex_hull(vector<pt>& a, bool include_collinear = true) {
 // --- 6. ADVANCED POLYGON ALGORITHMS ---
 // ==========================================
 
-// Point in Convex Polygon (O(log N))
-bool pointInConvexPolygon(vector<pt> poly, pt q, bool strict = true) {
+bool pointInConvexPolygon(const vector<pt>& poly, pt q, bool strict = true) {
     int n = poly.size();
     if (n == 0) return false;
     if (n == 1) return !strict && same(poly[0], q);
-    if (n == 2) return onSegment(poly[0], poly[1], q) && !strict;
+    if (n == 2) return !strict && onSegment(poly[0], poly[1], q);
 
-    if (sgn(cross(poly[1] - poly[0], q - poly[0])) < 0) return false;
-    if (sgn(cross(poly[n - 1] - poly[0], q - poly[0])) > 0) return false;
+    // The rest of this function assumes poly is CCW. Detect the actual
+    // orientation once — O(1), since a strict convex polygon can't have
+    // poly[0], poly[1], poly[2] collinear — and fold the sign into every
+    // cross-product test below, so this now works for CW input too.
+    T dir = (sgn(orient(poly[0], poly[1], poly[2])) >= 0) ? (T)1 : (T)-1;
+    auto cx = [&](pt v, pt w) { return dir * cross(v, w); };
+
+    if (sgn(cx(poly[1] - poly[0], q - poly[0])) < 0) return false;
+    if (sgn(cx(poly[n - 1] - poly[0], q - poly[0])) > 0) return false;
 
     if (onSegment(poly[0], poly[1], q) || onSegment(poly[0], poly[n - 1], q)) return !strict;
-    
+
     int l = 1, r = n - 1;
     while (r - l > 1) {
         int m = (l + r) / 2;
-        if (sgn(cross(poly[m] - poly[0], q - poly[0])) >= 0) l = m;
+        if (sgn(cx(poly[m] - poly[0], q - poly[0])) >= 0) l = m;
         else r = m;
     }
-    T cr = cross(poly[l + 1] - poly[l], q - poly[l]);
+
+    auto cr = cx(poly[l + 1] - poly[l], q - poly[l]);
     if (sgn(cr) < 0) return false;
     if (sgn(cr) == 0) return !strict;
+
+    if (sgn(cx(poly[l] - poly[0], q - poly[0])) == 0) {
+        if (sgn(cross(poly[1] - poly[0], poly[l] - poly[0])) == 0 ||
+            sgn(cross(poly[n - 1] - poly[0], poly[l] - poly[0])) == 0) {
+            return !strict;
+        }
+    }
     return true;
 }
 
