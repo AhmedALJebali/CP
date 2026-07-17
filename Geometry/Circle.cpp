@@ -190,3 +190,6 @@ CircleRelation circleRelation(pt c1, ld r1, pt c2, ld r2) {
   // Two intersection points
   return INTERSECT;
 }
+ld circleSegmentArea(ld r, ld d){
+    return r*r*acos(d/r)-d*sqrt(r*r-d*d);
+}
