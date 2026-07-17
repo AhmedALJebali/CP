@@ -107,30 +107,34 @@ bool cw(pt a, pt b, pt c, bool col) {
     return o < 0 || (col && o == 0);
 }
 
-void convex_hull(vector<pt>& a, bool include_collinear = false) {
-    if (a.size() <= 2) return;
+void convex_hull(vector<pt>& a, bool include_collinear = true) {
     pt p0 = *min_element(a.begin(), a.end(), [](pt a, pt b) {
         return make_pair(a.y, a.x) < make_pair(b.y, b.x);
     });
     sort(a.begin(), a.end(), [&p0](const pt& a, const pt& b) {
         int o = sgn(orient(p0, a, b));
-        if (o == 0) return sq(a - p0) < sq(b - p0);
-        return o > 0; // CCW Order
+        if (o == 0)
+            return (p0.x-a.x)*(p0.x-a.x) + (p0.y-a.y)*(p0.y-a.y)
+                   < (p0.x-b.x)*(p0.x-b.x) + (p0.y-b.y)*(p0.y-b.y);
+        return o < 0;
     });
     if (include_collinear) {
-        int i = (int)a.size() - 1;
+        int i = (int)a.size()-1;
         while (i >= 0 && collinear(p0, a[i], a.back())) i--;
-        reverse(a.begin() + i + 1, a.end());
+        reverse(a.begin()+i+1, a.end());
     }
+
     vector<pt> st;
     for (int i = 0; i < (int)a.size(); i++) {
         while (st.size() > 1 && !cw(st[st.size()-2], st.back(), a[i], include_collinear))
             st.pop_back();
-        if(st.empty() || !same(a[i], st.back()))
+        if(st.empty() || a[i] != st.back())
             st.push_back(a[i]);
     }
-    if (!include_collinear && st.size() >= 2 && same(st[0], st.back()))
+
+    if (include_collinear == false && st.size() == 2 && st[0] == st[1])
         st.pop_back();
+
     a = st;
 }
 
