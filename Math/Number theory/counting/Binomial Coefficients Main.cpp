@@ -47,6 +47,18 @@ int nCr_large_n(int n, int r) {
   }
   return (num * inv_fact[r]) % MOD;
 }
+int nCr(int n, int r) {
+  if (r < 0 || r > n) return 0;
+  if (r > n / 2) r = n - r;
+
+  int res = 1;
+  for (int i = 1; i <= r; i++) {
+    res = res * (n - i + 1);
+    res /= i;
+  }
+  return res;
+}
+
 int count_permutations(const vector<int>& box_capacities, int k) {
   vector<int> dp(k + 1, 0);
   dp[0] = 1;
