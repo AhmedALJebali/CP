@@ -66,7 +66,7 @@ int waysAtLeast(int n1, int n2, int k, int need) {
   int ans = nCrMod(n1 + n2, k);
   for (int i = 0; i < need; i++) {
     if (i <= n1 && k - i >= 0 && k - i <= n2)
-      ans = (ans - (1LL * nCrMod(n1, i) * nCrMod(n2, k - i))%MOD +MOD );
+      ans = (ans - (1LL * nCrMod(n1, i) * nCrMod(n2, k - i))%MOD +MOD )%MOD;
   }
   return ans;
 }
