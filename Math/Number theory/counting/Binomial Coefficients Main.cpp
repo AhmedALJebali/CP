@@ -60,7 +60,16 @@ int nCr(int n, int r) {
   }
   return res;
 }
-
+int waysAtLeast(int n1, int n2, int k, int need) {
+  if (need > k || need > n1 || k > n1 + n2)
+    return 0;
+  int ans = nCrMod(n1 + n2, k);
+  for (int i = 0; i < need; i++) {
+    if (i <= n1 && k - i >= 0 && k - i <= n2)
+      ans = (ans - (1LL * nCrMod(n1, i) * nCrMod(n2, k - i))%MOD +MOD );
+  }
+  return ans;
+}
 int count_permutations(const vector<int>& box_capacities, int k) {
   vector<int> dp(k + 1, 0);
   dp[0] = 1;
