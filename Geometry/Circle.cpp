@@ -193,3 +193,46 @@ CircleRelation circleRelation(pt c1, ld r1, pt c2, ld r2) {
 ld circleSegmentArea(ld r, ld d){
     return r*r*acos(d/r)-d*sqrt(r*r-d*d);
 }
+
+// ==========================================
+// --- 8. MINIMUM ENCLOSING CIRCLE ---
+// ==========================================
+ 
+pt circumCenter(pt a, pt b, pt c) {
+    b = b - a, c = c - a;
+    T d = 2.0L * cross(b, c);
+    if (sgn(d) == 0) return {numeric_limits<T>::quiet_NaN(), numeric_limits<T>::quiet_NaN()};
+    pt ans = perp_ccw(b * dot(c, c) - c * dot(b, b)) / d;
+    return a + ans;
+}
+ 
+// Welzl's algorithm for Minimum Enclosing Circle in O(N) expected time.
+// Returns a pair: {center_point, radius}
+pair<pt, T> welzl(vector<pt> P) { // Passed by value so we can shuffle safely
+    if (P.empty()) return {pt(0, 0), 0.0L};
+    if (P.size() == 1) return {P[0], 0.0L};
+    mt19937 gen(1337);
+    shuffle(P.begin(), P.end(), gen);
+    pt c = P[0];
+    T r = 0;
+    for (int i = 1; i < (int)P.size(); i++) {
+        if (abs(P[i] - c) > r + EPS) {
+            c = P[i];
+            r = 0;
+            for (int j = 0; j < i; j++) {
+                if (abs(P[j] - c) > r + EPS) {
+                    c = (P[i] + P[j]) / 2.0L;
+                    r = abs(P[i] - c);
+                    for (int k = 0; k < j; k++) {
+                        if (abs(P[k] - c) > r + EPS) {
+                            c = circumCenter(P[i], P[j], P[k]);
+                            r = abs(P[k] - c);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return {c, r};
+}
+
