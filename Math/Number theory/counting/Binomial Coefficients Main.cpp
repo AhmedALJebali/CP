@@ -17,7 +17,9 @@ int modPow(int a, int e, int m = MOD) {
     }
     return res;
 }
-
+int modInverse(int n) {
+    return modPow(n, MOD - 2);
+}
 // Precompute factorials and inverse factorials modulo MOD
 void preFactorial() {
     fact[0] = 1;
