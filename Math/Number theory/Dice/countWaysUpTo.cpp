@@ -1,3 +1,19 @@
+ld modPow(ld base, int exp) {
+  ld result = 1.0;
+  if (exp == 0) return 1.0;
+  if (exp < 0) {
+    base = 1.0 / base;
+    exp = -exp;
+  }
+  while (exp > 0) {
+    if (exp % 2 == 1) {
+      result *= base;
+    }
+    base *= base;
+    exp /= 2;
+  }
+  return result;
+}
 /*
  * Function to calculate the number of ways to get an EXACT sum.
  * n: number of dice
@@ -48,4 +64,19 @@ int countWaysUpTo(int n, int m, int target) {
         ret = (ret + countWaysExact(n, m, i)) % MOD;
     }
     return ret;
+}
+
+/*
+ * n: Total number of trials (e.g., total dice rolls)
+ * k: Number of successful occurrences wanted
+ * p: Probability of success in a SINGLE trial (e.g., 1.0/6.0 for getting a 4)
+ */
+ld binomialProbability(int n, int k, ld p) {
+  if (k < 0 || k > n || p < 0.0 || p > 1.0) {
+    return 0.0;
+  }
+  ld combinations = nCr(n, k);
+  ld success_prob = modPow(p, k);
+  ld failure_prob = modPow(1.0 - p, n - k);
+  return combinations * success_prob * failure_prob;
 }
