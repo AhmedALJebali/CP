@@ -24,6 +24,24 @@ int countWaysExact(int n, int m, int target) {
     }
     return dp[n][target];
 }
+int countWaysExact2(int N, int M, int targetSum) {
+    if (targetSum < N || targetSum > (long long)N * M) {
+        return 0;
+    }
+    int total_ways = 0;
+    int limit = (targetSum - N) / M;
+    for (int k = 0; k <= limit; k++) {
+        int part1 = nCr(N, k);
+        int part2 = nCr(targetSum - k * M - 1, N - 1);
+        int term = part1 * part2;
+        if (k % 2 == 0) {
+            total_ways += term; // Even k: Add to total
+        } else {
+            total_ways -= term; // Odd k: Subtract from total
+        }
+    }
+    return total_ways;
+}
 int countWaysUpTo(int n, int m, int target) {
     int ret = 0;
     for (int i = n; i <= target; i++) {
