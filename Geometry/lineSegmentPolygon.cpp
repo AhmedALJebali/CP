@@ -366,6 +366,9 @@ struct LineKey {
     LineKey(T a, T b, T c) : a(a), b(b), c(c) {
         normalize();
     }
+    LineKey(line l) : a(l.v.x), b(l.v.y), c(l.c) {
+        normalize();
+    }
     void normalize() {
         ld z = sqrt(a*a + b*b);
         a /= z; b /= z; c /= z;
@@ -379,6 +382,13 @@ struct LineKey {
         cmp = sgn(b - o.b);
         if (cmp != 0) return cmp == -1;
         return sgn(c - o.c) == -1;
+    }
+    bool operator==(const LineKey& o) const {
+        int cmp = sgn(a - o.a);
+        if (cmp != 0) return false;
+        cmp = sgn(b - o.b);
+        if (cmp != 0) return false;
+        return sgn(c - o.c) == 0;
     }
 };
 // Length of the circular arc from 'a' to 'b'
