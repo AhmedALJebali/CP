@@ -46,3 +46,25 @@ perm pow(perm inp, perm apply, int k) {
   }
   return inp;
 }
+perm pow_cycle(perm inp, const perm& apply, int k) {
+  int n = apply.size();
+  perm apply_k(n);
+  vector<bool> visited(n, false);
+  for (int i = 0; i < n; ++i) {
+    if (!visited[i]) {
+      vector<int> cycle;
+      int current = i;
+      while (!visited[current]) {
+        visited[current] = true;
+        cycle.push_back(current);
+        current = apply[current];
+      }
+      int L = cycle.size();
+      int steps = k % L; 
+      for (int j = 0; j < L; ++j) {
+        apply_k[cycle[j]] = cycle[(j + steps) % L];
+      }
+    }
+  }
+  return multiply(inp, apply_k);
+}
