@@ -23,3 +23,26 @@ int PermToIndex(vector<int> perm) {
   }
   return idx;
 }
+using perm = std::vector<int>;
+perm multiply(const perm& A, const perm& B) {
+  int n = A.size();
+  perm C(n);
+  for (int i = 0; i < n; ++i) {
+    C[i] = B[A[i]]; 
+  }
+  return C;
+}
+
+perm pow(perm inp, perm apply, int k) {
+  if (k == 0) {
+    return inp;
+  }
+  while (k > 0) {
+    if (k % 2 == 1) {
+      inp = multiply(inp, apply);
+    }
+    apply = multiply(apply, apply);
+    k /= 2;
+  }
+  return inp;
+}
