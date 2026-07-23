@@ -1,3 +1,4 @@
+// The winner is predetermined by the initial minimum swaps needed to sort the array (Total Elements - Number of Cycles).
 vector<int> nthPerm(int len, int nth) {
   vector<int> identity(len), perm(len);
   for (int i = 0; i < len; ++i) {
