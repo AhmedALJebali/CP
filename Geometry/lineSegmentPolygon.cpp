@@ -525,4 +525,9 @@ void sortCounterClockwise(vector<pt>& pts, pt center) {
         return sgn(sq(a - center) - sq(b - center)) < 0;
     });
 }
+line getPerpBisector(pt a, pt b) {
+    pt mid = (a + b) / (T)2.0;     
+    line ab(a, b);             
+    return ab.prepThrough(mid);  
+}
 
