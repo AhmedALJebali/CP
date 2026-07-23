@@ -97,3 +97,23 @@ int minSwapsToSort(vector<int> arr) {
   }
   return swaps;
 }
+// Permutation Order is the minimum number of applications required to return an entire array back to its original state, calculated by finding the Least Common Multiple (LCM) of all individual cycle lengths.
+int getPermutationOrder(const perm& p) {
+  int n = p.size();
+  vector<bool> visited(n, false);
+  int permutation_order = 1;
+  for (int i = 0; i < n; ++i) {
+    if (!visited[i]) {
+      int cycle_length = 0;
+      int current = i;
+      while (!visited[current]) {
+        visited[current] = true;
+        current = p[current];
+        cycle_length++;
+      }
+      permutation_order = lcm(permutation_order, cycle_length);
+    }
+  }
+    
+  return permutation_order;
+}
