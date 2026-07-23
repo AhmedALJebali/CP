@@ -343,3 +343,34 @@ line getPerpBisector(pt a, pt b) {
     line ab(a, b);             
     return ab.prepThrough(mid);  
 }
+struct LineKey {
+    T a, b, c;
+    LineKey(T a, T b, T c) : a(a), b(b), c(c) {
+        normalize();
+    }
+    LineKey(line l) : a(l.v.x), b(l.v.y), c(l.c) {
+        normalize();
+    }
+    void normalize() {
+        ld z = sqrt(a*a + b*b);
+        a /= z; b /= z; c /= z;
+        if (a < 0 || (a == 0 && b < 0)) {
+            a = -a; b = -b; c = -c;
+        }
+    }
+    bool operator<(const LineKey& o) const {
+        int cmp = sgn(a - o.a);
+        if (cmp != 0) return cmp == -1;
+        cmp = sgn(b - o.b);
+        if (cmp != 0) return cmp == -1;
+        return sgn(c - o.c) == -1;
+    }
+    bool operator==(const LineKey& o) const {
+        int cmp = sgn(a - o.a);
+        if (cmp != 0) return false;
+        cmp = sgn(b - o.b);
+        if (cmp != 0) return false;
+        return sgn(c - o.c) == 0;
+    }
+};
+
