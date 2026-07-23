@@ -117,3 +117,17 @@ int getPermutationOrder(const perm& p) {
     
   return permutation_order;
 }
+// The number of permutations of n distinct elements that consist of exactly k disjoint cycles.
+int stirlingFirstOptimized(int n, int k) {
+  if (k < 0 || k > n) return 0;
+  vector<int> dp(k + 1, 0);
+  dp[0] = 1;
+  for (int i = 1; i <= n; i++) {
+    int upto = min(i, k);
+    for (int j = upto; j >= 1; j--) {
+      dp[j] = (i - 1) * dp[j] + dp[j - 1];
+    }
+    dp[0] = 0;
+  }
+  return dp[k];
+}
