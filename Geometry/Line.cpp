@@ -338,3 +338,8 @@ pair<int, int> anyIntersection(vector<pair<pt, pt>> segs) {
     }
     return {-1, -1}; // No intersections found
 }
+line getPerpBisector(pt a, pt b) {
+    pt mid = (a + b) / (T)2.0;     
+    line ab(a, b);             
+    return ab.prepThrough(mid);  
+}
