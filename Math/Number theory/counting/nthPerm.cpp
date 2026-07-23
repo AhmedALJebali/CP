@@ -68,3 +68,30 @@ perm pow_cycle(perm inp, const perm& apply, int k) {
   }
   return multiply(inp, apply_k);
 }
+int minSwapsToSort(vector<int> arr) {
+  int n = arr.size();
+  vector<int> sorted_arr = arr;
+  sort(sorted_arr.begin(), sorted_arr.end());
+  map<int, int> correct_pos;
+  for (int i = 0; i < n; ++i) {
+    correct_pos[sorted_arr[i]] = i;
+  }
+  vector<bool> visited(n, false);
+  int swaps = 0;
+  for (int i = 0; i < n; ++i) {
+    if (visited[i] || correct_pos[arr[i]] == i) {
+      continue;
+    }
+    int cycle_length = 0;
+    int current = i;
+    while (!visited[current]) {
+      visited[current] = true;
+      current = correct_pos[arr[current]]; 
+      cycle_length++;
+    }
+    if (cycle_length > 0) {
+      swaps += (cycle_length - 1);
+    }
+  }
+  return swaps;
+}
