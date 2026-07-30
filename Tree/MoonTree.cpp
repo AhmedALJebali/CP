@@ -1,20 +1,17 @@
-
 const int MAXN = 100005;
 const int LOG = 18;
-
 int n, q;
 vector<int> adj[MAXN];
-
 int timer = 0;
 int st[MAXN], en[MAXN], euler[2 * MAXN];
 int depth[MAXN];
 int up[MAXN][LOG];
-
 int BLOCK_SIZE;
 int node_freq[MAXN];
 int current_ans = 0;
 int ans[MAXN];
-
+int frq[MAXN]; 
+vector<int> a; 
 void dfs(int u, int p) {
     st[u] = ++timer;
     euler[timer] = u;
@@ -31,6 +28,7 @@ void dfs(int u, int p) {
     en[u] = ++timer;
     euler[timer] = u;
 }
+
 int get_lca(int u, int v) {
     if (depth[u] < depth[v]) swap(u, v);
     int diff = depth[u] - depth[v];
@@ -59,14 +57,34 @@ struct Query {
 vector<Query> queries;
 
 void toggle(int u) {
+    int val = a[u];
     if (node_freq[u] == 1) {
         node_freq[u] = 0;
+        frq[val]--;
+        if (frq[val] == 0) {
+            current_ans--;
+        }
     } else {
         node_freq[u] = 1;
+        if (frq[val] == 0) {
+            current_ans++;
+        }
+        frq[val]++;
     }
 }
+
 void solve() {
     cin >> n >> q;
+    a.assign(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+        cin >> a[i];
+    }
+    vector<int> coord = a;
+    sort(coord.begin() + 1, coord.end());
+    coord.erase(unique(coord.begin() + 1, coord.end()), coord.end());
+    for (int i = 1; i <= n; i++) {
+        a[i] = lower_bound(coord.begin() + 1, coord.end(), a[i]) - coord.begin();
+    }
     for (int i = 0; i < n - 1; i++) {
         int u, v;
         cin >> u >> v;
@@ -75,9 +93,7 @@ void solve() {
     }
     depth[1] = 0;
     dfs(1, 1);
-
     BLOCK_SIZE = max(1LL, (int)sqrt(2 * n));
-
     for (int i = 0; i < q; i++) {
         int u, v;
         cin >> u >> v;
@@ -90,7 +106,7 @@ void solve() {
         }
     }
     sort(queries.begin(), queries.end());
-    int L = 1, R = 0; 
+    int L = 1, R = 0;
     for (Query q : queries) {
         while (L > q.l) { L--; toggle(euler[L]); }
         while (R < q.r) { R++; toggle(euler[R]); }
