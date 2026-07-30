@@ -1,122 +1,141 @@
-const int MAXN = 100005;
-const int LOG = 18;
-int n, q;
-vector<int> adj[MAXN];
-int timer = 0;
-int st[MAXN], en[MAXN], euler[2 * MAXN];
-int depth[MAXN];
-int up[MAXN][LOG];
-int BLOCK_SIZE;
-int node_freq[MAXN];
-int current_ans = 0;
-int ans[MAXN];
-int frq[MAXN]; 
-vector<int> a; 
-void dfs(int u, int p) {
-    st[u] = ++timer;
-    euler[timer] = u;
-    up[u][0] = p;
-    for (int i = 1; i < LOG; i++) {
-        up[u][i] = up[up[u][i - 1]][i - 1];
+int const N = 1e5+1, Log = 20 , block_size = 440 ;
+int n , q , blk[N] , freq[N] , ans[N] , val[N], in[N] , out[N], nodes[2 * N] , Timer = 0 , up[Log][N] , depth[N]   , parity[N];
+vector<int> adj[N] ;
+set<int>s;
+void dfs(int u , int p) {
+    in[u] = Timer ;
+    nodes[Timer] = u ;
+    Timer++;
+    up[0][u] = p ;
+    depth[u] = depth[p]+1 ;
+    for (auto v : adj[u]) {
+        if (v == p)continue;
+        dfs(v,u);
     }
-    for (int v : adj[u]) {
-        if (v != p) {
-            depth[v] = depth[u] + 1;
-            dfs(v, u);
+    out[u] = Timer ;
+    nodes[Timer] = u ;
+    Timer++;
+}
+void build() {
+    for (int i = 1 ; i< Log ; i++) {
+        for (int j = 0 ; j < n ; j++) {
+            up[i][j] = up[i - 1][up[i - 1][j]];
         }
     }
-    en[u] = ++timer;
-    euler[timer] = u;
 }
-
-int get_lca(int u, int v) {
-    if (depth[u] < depth[v]) swap(u, v);
-    int diff = depth[u] - depth[v];
-    for (int i = 0; i < LOG; i++) {
-        if ((diff >> i) & 1) u = up[u][i];
-    }
-    if (u == v) return u;
-    for (int i = LOG - 1; i >= 0; i--) {
-        if (up[u][i] != up[v][i]) {
-            u = up[u][i];
-            v = up[v][i];
+int walk(int u , int k) {
+    for (int i = 0 ; i < Log ; i++) {
+        if (k >> i & 1) {
+            u = up[i][u];
         }
     }
-    return up[u][0];
+    return u ;
 }
-
+int lca(int u ,int v) {
+    if (depth[u] > depth[v]) {swap(u,v); }
+    v = walk(v,depth[v] - depth[u]);
+    if (u == v)return u ;
+    for (int i = Log-1 ; i >= 0 ; i--) {
+        if (up[i][u] != up[i][v]) {
+            u = up[i][u];
+            v = up[i][v];
+        }
+    }
+    return up[0][u];
+}
 struct Query {
-    int l, r, id, lca;
+    int l , r  , idx , lca , need ;
+    Query(int l , int r , int idx ,int lca , int need) : l(l) , r(r) , idx(idx),lca(lca),need(need){}
     bool operator<(const Query& other) const {
-        int b1 = l / BLOCK_SIZE;
-        int b2 = other.l / BLOCK_SIZE;
-        if (b1 != b2) return b1 < b2;
-        return (b1 & 1) ? r < other.r : r > other.r;
+        int bla = l / block_size ;
+        int blb = other.l / block_size ;
+        if (bla != blb) { return bla < blb;}
+        return (bla & 1 ^ 1) ? r < other.r : r > other.r ;
     }
 };
-vector<Query> queries;
-
-void toggle(int u) {
-    int val = a[u];
-    if (node_freq[u] == 1) {
-        node_freq[u] = 0;
-        frq[val]--;
-        if (frq[val] == 0) {
-            current_ans--;
+void add(int u) {
+    if(val[u] == -1) return;
+    int v = val[u];
+    if(freq[v] == 0) blk[v / block_size]--;
+    freq[v]++;
+}
+void erase(int u) {
+    if(val[u] == -1)return;
+    int v = val[u] ;
+    if(freq[v] == 1) blk[v / block_size]++;
+    freq[v]--;
+}
+int get_mex(){
+    int blocks = (n + block_size) / block_size ; 
+    for(int i = 0 ; i <= blocks ; i++){
+        if(blk[i] == 0)continue;
+        int l = i * block_size ; 
+        int r = min(n , l + block_size - 1);
+        for(int v = l ; v <= r ;v++){
+            if(freq[v] == 0) return v ; 
         }
-    } else {
-        node_freq[u] = 1;
-        if (frq[val] == 0) {
-            current_ans++;
+    }
+    return n ; 
+}
+void update(int MoIdx) {
+    if (parity[nodes[MoIdx]] & 1)  {
+        erase(nodes[MoIdx]);
+    }
+    else {
+        add(nodes[MoIdx]);
+    }
+    parity[nodes[MoIdx]]^=1;
+}
+void Mo(vector<Query> &queries) {
+    int MoLeft = 0,MoRight = -1;
+    for(auto &q: queries) {
+        while(MoRight < q.r) update(++MoRight);
+        while(MoLeft > q.l) update(--MoLeft);
+        while(MoRight > q.r) update(MoRight--);
+        while(MoLeft < q.l) update(MoLeft++);
+        if (q.need) {
+            add(q.lca);
         }
-        frq[val]++;
+        ans[q.idx] = get_mex();
+        if (q.need) {
+            erase(q.lca);
+        }
     }
 }
-
 void solve() {
-    cin >> n >> q;
-    a.assign(n + 1, 0);
-    for (int i = 1; i <= n; i++) {
-        cin >> a[i];
+    cin >> n >> q ;
+    for(int i = 0 ; i < n ; i++){
+        cin >> val[i];
+        if(val[i] > n) val[i] = 0;
+        val[i]--;
+        blk[i / block_size]++;
     }
-    vector<int> coord = a;
-    sort(coord.begin() + 1, coord.end());
-    coord.erase(unique(coord.begin() + 1, coord.end()), coord.end());
-    for (int i = 1; i <= n; i++) {
-        a[i] = lower_bound(coord.begin() + 1, coord.end(), a[i]) - coord.begin();
+    blk[n / block_size]++;
+ 
+    for (int i = 1 ; i< n ; i++) {
+        int u ,v ; cin >> u >> v ;
+        u--,v--;
+        adj[u].emplace_back(v);
+        adj[v].emplace_back(u);
     }
-    for (int i = 0; i < n - 1; i++) {
-        int u, v;
-        cin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
-    }
-    depth[1] = 0;
-    dfs(1, 1);
-    BLOCK_SIZE = max(1LL, (int)sqrt(2 * n));
-    for (int i = 0; i < q; i++) {
-        int u, v;
-        cin >> u >> v;
-        if (st[u] > st[v]) swap(u, v);
-        int lca = get_lca(u, v);
-        if (lca == u) {
-            queries.push_back({st[u], st[v], i, -1});
-        } else {
-            queries.push_back({en[u], st[v], i, lca});
+    dfs(0,0);
+    build();
+    vector<Query>queries;
+    for (int i = 0 ; i < q ; i++) {
+        int u , v ; cin >> u >> v ;
+        u--,v--;
+        if (in[u] > in[v]) swap(u,v);
+        int l = lca(u,v);
+        if (l == u) {
+            queries.emplace_back(in[u],in[v],i,l,false);
+        }
+        else {
+            queries.emplace_back(out[u],in[v],i,l,true);
         }
     }
-    sort(queries.begin(), queries.end());
-    int L = 1, R = 0;
-    for (Query q : queries) {
-        while (L > q.l) { L--; toggle(euler[L]); }
-        while (R < q.r) { R++; toggle(euler[R]); }
-        while (L < q.l) { toggle(euler[L]); L++; }
-        while (R > q.r) { toggle(euler[R]); R--; }
-        if (q.lca != -1) toggle(q.lca);
-        ans[q.id] = current_ans;
-        if (q.lca != -1) toggle(q.lca);
-    }
-    for (int i = 0; i < q; i++) {
-        cout << ans[i] << "\n";
+    sort(all(queries));
+    Mo(queries);
+    for (int i = 0 ; i < q ; i++) {
+        cout << ans[i] << endl ;
     }
 }
