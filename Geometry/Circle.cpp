@@ -367,4 +367,196 @@ T circlePolygonArea(pt c, T r, const vector<pt>& poly) {
     }
     return abs(area);
 }
+// Ray-casting algorithm to check if a point is strictly inside a polygon
+bool pointInPolygon(pt p, const vector<pt>& poly) {
+    bool inside = false;
+    int n = poly.size();
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        pt a = poly[i];
+        pt b = poly[j];
+        if (a.y > b.y) swap(a, b);
 
+        // If the point's Y is within the edge's Y range
+        if (p.y > a.y && p.y <= b.y) {
+            // Find the X coordinate of the intersection
+            T x_intersect = a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y);
+            if (x_intersect > p.x) {
+                inside = !inside;
+            }
+        }
+    }
+    return inside;
+}
+
+// Intersect a circle (Center C, radius R) with a line segment (A to B)
+vector<pt> getIntersections(pt C, T R, pt A, pt B) {
+    vector<pt> res;
+    pt V = B - A;
+    T L = abs(V);
+    if (L < 1e-11) return res;
+
+    pt U = V / L;
+    pt W = C - A;
+    T t_proj = dot(W, U);
+    pt P = A + U * t_proj; // Closest point on line to center
+
+    T d = abs(C - P);
+    if (d > R + 1e-9) return res; // Line is too far
+
+    T m = 0;
+    if (R > d) m = sqrt(max((T)0.0, R * R - d * d));
+
+    T t1 = t_proj - m;
+    T t2 = t_proj + m;
+
+    // Check if intersections lie on the segment
+    if (t1 >= 0 && t1 <= L) res.push_back(A + U * t1);
+    if (m > 1e-9 && t2 >= 0 && t2 <= L) res.push_back(A + U * t2);
+
+    return res;
+}
+
+
+T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vector<pt>& poly) {
+    int n = circles_input.size();
+    if (n == 0 || poly.size() < 3) return 0.0L;
+
+    vector<pair<pt, T>> circles;
+    for (int i = 0; i < n; ++i) {
+        if (sgn(circles_input[i].second) > 0) {
+            circles.push_back(circles_input[i]);
+        }
+    }
+    n = circles.size();
+    vector<bool> covered(n, false);
+
+    // 1. Mark completely identical/swallowed circles
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (i == j) continue;
+            T d = abs(circles[i].first - circles[j].first);
+            if (sgn(d + circles[i].second - circles[j].second) <= 0) {
+                if (sgn(circles[i].second - circles[j].second) == 0) {
+                    if (i < j) covered[i] = true;
+                } else {
+                    covered[i] = true;
+                }
+            }
+        }
+    }
+
+    T total_perimeter = 0.0L;
+
+    for (int i = 0; i < n; ++i) {
+        if (covered[i]) continue;
+
+        vector<pair<T, T>> intervals;
+        pt center = circles[i].first;
+        T R = circles[i].second;
+
+        // Helper function to safely wrap and add intervals
+        auto add_interval = [&](T left, T right) {
+            if (right - left >= 2.0L * PI - 1e-11) {
+                intervals.push_back({-PI, PI});
+                return;
+            }
+            while (left < -PI) { left += 2.0L * PI; right += 2.0L * PI; }
+            while (left >= PI) { left -= 2.0L * PI; right -= 2.0L * PI; }
+
+            if (right > PI) {
+                intervals.push_back({left, PI});
+                intervals.push_back({-PI, right - 2.0L * PI});
+            } else {
+                intervals.push_back({left, right});
+            }
+        };
+
+        // 2. Add covered intervals from OTHER CIRCLES
+        for (int j = 0; j < n; ++j) {
+            if (i == j || covered[j]) continue;
+            T d = abs(circles[i].first - circles[j].first);
+
+            if (sgn(d - (R + circles[j].second)) >= 0) continue;
+            if (sgn(d - abs(R - circles[j].second)) <= 0) continue;
+
+            T phi = arg(circles[j].first - circles[i].first);
+            T cosTheta = (R * R + d * d - circles[j].second * circles[j].second) / (2.0L * R * d);
+            cosTheta = clamp(cosTheta, (T)-1.0, (T)1.0);
+            T theta = acos(cosTheta);
+
+            add_interval(phi - theta, phi + theta);
+        }
+
+        // 3. Add covered intervals from the POLYGON BOUNDARIES
+        vector<T> poly_angles = {-PI, PI}; // Start with base circle wrap angles
+        int p_sz = poly.size();
+
+        // Find all intersection points with the polygon
+        for (int k = 0; k < p_sz; ++k) {
+            pt A = poly[k];
+            pt B = poly[(k + 1) % p_sz];
+
+            vector<pt> intersections = getIntersections(center, R, A, B);
+            for (const pt& p : intersections) {
+                poly_angles.push_back(arg(p - center));
+            }
+        }
+
+        // Sort the boundary angles to process arcs sequentially
+        sort(poly_angles.begin(), poly_angles.end());
+
+        // Check the midpoint of each resulting arc
+        for (size_t k = 0; k < poly_angles.size() - 1; ++k) {
+            T left = poly_angles[k];
+            T right = poly_angles[k+1];
+
+            if (right - left < 1e-9) continue;
+
+            T mid_angle = (left + right) / 2.0L;
+            pt test_point = center + polar(R, mid_angle);
+
+            // If the midpoint of this arc is OUTSIDE the polygon, this arc is exposed/covered
+            if (!pointInPolygon(test_point, poly)) {
+                add_interval(left, right);
+            }
+        }
+
+        // 4. Sort and Merge all intervals
+        sort(intervals.begin(), intervals.end());
+        vector<pair<T, T>> merged;
+        if (!intervals.empty()) {
+            T cur_left = intervals[0].first;
+            T cur_right = intervals[0].second;
+            for (int k = 1; k < (int)intervals.size(); ++k) {
+                if (intervals[k].first <= cur_right + 1e-11) {
+                    cur_right = max(cur_right, intervals[k].second);
+                } else {
+                    merged.push_back({cur_left, cur_right});
+                    cur_left = intervals[k].first;
+                    cur_right = intervals[k].second;
+                }
+            }
+            merged.push_back({cur_left, cur_right});
+        }
+
+        // 5. Calculate uncovered Arc Length (Perimeter)
+        T prev = -PI;
+        T exposed_angle = 0.0L;
+        for (const auto& p : merged) {
+            T left = p.first;
+            T right = p.second;
+
+            if (left > prev) {
+                exposed_angle += (left - prev);
+            }
+            prev = max(prev, right);
+        }
+        if (prev < PI) {
+            exposed_angle += (PI - prev);
+        }
+
+        total_perimeter += exposed_angle * R;
+    }
+
+    return total_perimeter;
+}
