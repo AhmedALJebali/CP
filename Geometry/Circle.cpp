@@ -236,3 +236,92 @@ pair<pt, T> welzl(vector<pt> P) { // Passed by value so we can shuffle safely
     return {c, r};
 }
 
+// Computes the exact area covered by the union of N circles in O(N^2 log N)
+T circleUnionArea(const vector<pair<pt,T>>& circles_input) {
+    int n = circles_input.size();
+    if (n == 0) return 0.0L;
+    vector<pair<pt,T>> circles;
+    for (int i = 0; i < n; ++i) {
+        if (sgn(circles_input[i].second) > 0) {
+            circles.push_back(circles_input[i]);
+        }
+    }
+    n = circles.size();
+    vector<bool> covered(n, false);
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            if (i == j) continue;
+            T d = abs(circles[i].first - circles[j].first);
+            if (sgn(d + circles[i].second - circles[j].second) <= 0) {
+                if (sgn(circles[i].second - circles[j].second) == 0) {
+                    if (i < j) covered[i] = true;
+                } else {
+                    covered[i] = true;
+                }
+            }
+        }
+    }
+    T total_area = 0.0L;
+    for (int i = 0; i < n; ++i) {
+        if (covered[i]) continue;
+        vector<pair<T, T>> intervals;
+        for (int j = 0; j < n; ++j) {
+            if (i == j || covered[j]) continue;
+            T d = abs(circles[i].first - circles[j].first);
+            if (sgn(d - (circles[i].second + circles[j].second)) >= 0) continue;
+            if (sgn(d - abs(circles[i].second - circles[j].second)) <= 0) continue;
+            T phi = arg(circles[j].first - circles[i].first);
+            T cosTheta = (circles[i].second * circles[i].second + d * d - circles[j].second * circles[j].second) / (2.0L * circles[i].second * d);
+            cosTheta = max((T)-1.0, min((T)1.0, cosTheta));
+            T theta = acos(cosTheta);
+            T left = phi - theta;
+            T right = phi + theta;
+            if (left < -PI) {
+                intervals.push_back({left + 2.0L * PI, PI});
+                intervals.push_back({-PI, right});
+            } else if (right > PI) {
+                intervals.push_back({left, PI});
+                intervals.push_back({-PI, right - 2.0L * PI});
+            } else {
+                intervals.push_back({left, right});
+            }
+        }
+        sort(intervals.begin(), intervals.end());
+        vector<pair<T, T>> merged;
+        if (!intervals.empty()) {
+            T cur_left = intervals[0].first;
+            T cur_right = intervals[0].second;
+            for (int k = 1; k < (int)intervals.size(); ++k) {
+                if (intervals[k].first <= cur_right + 1e-12) {
+                    cur_right = max(cur_right, intervals[k].second);
+                } else {
+                    merged.push_back({cur_left, cur_right});
+                    cur_left = intervals[k].first;
+                    cur_right = intervals[k].second;
+                }
+            }
+            merged.push_back({cur_left, cur_right});
+        }
+        T prev = -PI;
+        for (const auto& p : merged) {
+            T left = p.first;
+            T right = p.second;
+            if (left > prev) {
+                pt p1 = circles[i].first + pt(circles[i].second * cos(prev), circles[i].second * sin(prev));
+                pt p2 = circles[i].first + pt(circles[i].second * cos(left), circles[i].second * sin(left));
+                T delta = left - prev;
+                total_area += cross(p1, p2) / 2.0L;
+                total_area += circles[i].second * circles[i].second * (delta - sin(delta)) / 2.0L;
+            }
+            prev = right;
+        }
+        if (prev < PI) {
+            pt p1 = circles[i].first + pt(circles[i].second * cos(prev), circles[i].second * sin(prev));
+            pt p2 = circles[i].first + pt(circles[i].second * cos(PI), circles[i].second * sin(PI));
+            T delta = PI - prev;
+            total_area += cross(p1, p2) / 2.0L;
+            total_area += circles[i].second * circles[i].second * (delta - sin(delta)) / 2.0L;
+        }
+    }
+    return total_area;
+}
