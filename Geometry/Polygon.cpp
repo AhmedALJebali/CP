@@ -241,3 +241,93 @@ pt centroid(const vector<pt> &p) {
     if (abs(sum) < EPS) return {0, 0}; 
     return c / (3.0L * sum);
 }
+// ==========================================
+// --- ROTATING CALIPERS ---
+// ==========================================
+
+// 1. Maximum distance from any point on the perimeter to another point (Diameter)
+T polygonDiameter(const vector<pt> &p) {
+    int n = (int)p.size();
+    if (n <= 1) return 0.0L;
+    if (n == 2) return abs(p[0] - p[1]);
+
+    T ans = 0;
+    int i = 0, j = 1;
+    while (i < n) {
+        // Advance j while the cross product of edges is >= 0
+        while (sgn(cross(p[(i + 1) % n] - p[i], p[(j + 1) % n] - p[j])) >= 0) {
+            ans = max(ans, sq(p[i] - p[j]));
+            j = (j + 1) % n;
+        }
+        ans = max(ans, sq(p[i] - p[j]));
+        i++;
+    }
+    return sqrt(max((T)0.0, ans));
+}
+
+// 2. Minimum distance between two parallel lines enclosing the polygon (Width)
+T polygonWidth(const vector<pt> &p) {
+    int n = (int)p.size();
+    if (n <= 2) return 0.0L;
+
+    T ans = numeric_limits<T>::infinity();
+    int i = 0, j = 1;
+    while (i < n) {
+        while (sgn(cross(p[(i + 1) % n] - p[i], p[(j + 1) % n] - p[j])) >= 0) {
+            j = (j + 1) % n;
+        }
+        // Distance from point p[j] to line(p[i], p[i+1])
+        line l(p[i], p[(i + 1) % n]);
+        T dist = abs(l.side(p[j])) / abs(l.v);
+        ans = min(ans, dist);
+        i++;
+    }
+    return ans;
+}
+
+// 3. Minimum enclosing rectangle (Returns Perimeter)
+T minimumEnclosingRectanglePerimeter(const vector<pt> &p) {
+    int n = (int)p.size();
+    if (n <= 2) return perimeterPolygon(p); // Reuses your existing function
+
+    int mndot = 0;
+    pt initial_edge = p[1] - p[0];
+    T tmp = dot(initial_edge, p[0]);
+
+    for (int i = 1; i < n; i++) {
+        if (sgn(dot(initial_edge, p[i]) - tmp) <= 0) {
+            tmp = dot(initial_edge, p[i]);
+            mndot = i;
+        }
+    }
+
+    T ans = numeric_limits<T>::infinity();
+    int i = 0, j = 1, mxdot = 1;
+
+    while (i < n) {
+        pt cur = p[(i + 1) % n] - p[i];
+        T cur_len = abs(cur);
+
+        while (sgn(cross(cur, p[(j + 1) % n] - p[j])) >= 0) {
+            j = (j + 1) % n;
+        }
+        while (sgn(dot(p[(mxdot + 1) % n], cur) - dot(p[mxdot], cur)) >= 0) {
+            mxdot = (mxdot + 1) % n;
+        }
+        while (sgn(dot(p[(mndot + 1) % n], cur) - dot(p[mndot], cur)) <= 0) {
+            mndot = (mndot + 1) % n;
+        }
+
+        // Height: distance from top caliper point to the base line
+        line l(p[i], p[(i + 1) % n]);
+        T height = abs(l.side(p[j])) / cur_len;
+
+        // Width: projection difference between right and left caliper points
+        T width = (dot(p[mxdot], cur) - dot(p[mndot], cur)) / cur_len;
+
+        ans = min(ans, 2.0L * (width + height));
+        i++;
+    }
+    return ans;
+}
+
