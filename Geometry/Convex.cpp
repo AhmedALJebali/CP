@@ -304,74 +304,148 @@ struct cmp {
 
 struct upper_hull {
     set<pt, cmp> st;
-    // 0 = outside
-    // 1 = strictly inside
-    // 2 = on boundary
+    long long area2 = 0; // Maintains 2 * Area of the upper envelope
+
+    // Helper for cross product (assuming integer coordinates, cast prevents overflow)
+    long long cross(pt a, pt b) {
+        return 1LL * a.x * b.y - 1LL * a.y * b.x;
+    }
+
+    void add_edge(pt a, pt b) {
+        area2 += cross(a, b);
+    }
+
+    void remove_edge(pt a, pt b) {
+        area2 -= cross(a, b);
+    }
+
+    auto add_point(pt p) {
+        auto it = st.insert(p).first;
+        bool has_prev = (it != st.begin());
+        bool has_next = (next(it) != st.end());
+
+        if (has_prev && has_next) remove_edge(*prev(it), *next(it));
+        if (has_prev) add_edge(*prev(it), p);
+        if (has_next) add_edge(p, *next(it));
+
+        return it;
+    }
+
+    void remove_point(set<pt, cmp>::iterator it) {
+        bool has_prev = (it != st.begin());
+        bool has_next = (next(it) != st.end());
+
+        if (has_prev) remove_edge(*prev(it), *it);
+        if (has_next) remove_edge(*it, *next(it));
+        if (has_prev && has_next) add_edge(*prev(it), *next(it));
+
+        st.erase(it);
+    }
+
+    // 0 = outside, 1 = strictly inside, 2 = on boundary
     int is_under(pt p) {
         auto it = st.lower_bound(p);
-        if (it == st.end())
-            return 0;
-        if (sgn(it->x - p.x) == 0) {
-            return sgn(it->y - p.y) == 0 ? 2 : 1;
-        }
-        if (it == st.begin())
-            return 0;
+        if (it == st.end()) return 0;
+        if (sgn(it->x - p.x) == 0) return sgn(it->y - p.y) == 0 ? 2 : 1;
+        if (it == st.begin()) return 0;
         int o = sgn(orient(p, *it, *prev(it)));
         if (o > 0) return 1;
         if (o == 0) return 2;
         return 0;
     }
+
     void insert(pt p) {
-        if (is_under(p))
-            return;
-        auto it = st.lower_bound(pt(p.x, -1e18));
-        while (it != st.end() && sgn(it->x - p.x) == 0) {
-            it = st.erase(it);
+        if (is_under(p)) return;
+
+        auto it_x = st.lower_bound(pt(p.x, -1e18));
+        while (it_x != st.end() && sgn(it_x->x - p.x) == 0) {
+            auto nxt = next(it_x);
+            remove_point(it_x);
+            it_x = nxt;
         }
-        it = st.insert(p).first;
+
+        auto it = add_point(p);
+
         while (next(it) != st.end() &&
                next(next(it)) != st.end() &&
                sgn(orient(*it, *next(it), *next(next(it)))) >= 0) {
-            st.erase(next(it));
+            remove_point(next(it));
         }
         while (it != st.begin() &&
                prev(it) != st.begin() &&
                sgn(orient(*prev(prev(it)), *prev(it), *it)) >= 0) {
-            st.erase(prev(it));
+            remove_point(prev(it));
+        }
+    }
+
+    void erase(pt p) {
+        auto it = st.find(p);
+        if (it != st.end()) {
+            remove_point(it);
         }
     }
 };
 
 struct DynamicHull {
     upper_hull upper, lower;
+
     void insert(pt p) {
         upper.insert(p);
         lower.insert(-p);
     }
-    // 0 = outside
-    // 1 = strictly inside
-    // 2 = on boundary
+
+    void erase(pt p) {
+        upper.erase(p);
+        lower.erase(-p);
+    }
+
+    // 0 = outside, 1 = strictly inside, 2 = on boundary
     int is_inside(pt p) {
         int u = upper.is_under(p);
         int l = lower.is_under(-p);
-        if (!u || !l)
-            return 0;
+        if (!u || !l) return 0;
         return max(u, l);
     }
+
+    // O(1) area tracking
+    long long get_area2() {
+        if (upper.st.empty() && lower.st.empty()) return 0;
+
+        long long res = upper.area2 + lower.area2;
+
+        // Connect the endpoints of upper and lower envelopes
+        if (!upper.st.empty() && !lower.st.empty()) {
+            pt u_right = *upper.st.rbegin();
+            pt u_left = *upper.st.begin();
+            pt l_right = -(*lower.st.begin());
+            pt l_left = -(*lower.st.rbegin());
+
+            res += upper.cross(u_right, l_right);
+            res += upper.cross(l_left, u_left);
+        }
+        return abs(res);
+    }
+
+    double get_area() {
+        return get_area2() / 2.0;
+    }
+
     // Returns hull vertices in strictly CCW order.
     vector<pt> get_hull() {
         vector<pt> up(upper.st.begin(), upper.st.end());
-        if (up.size() <= 1)
-            return up;
+        if (up.size() <= 1) return up;
+
         vector<pt> down;
-        for (auto p : lower.st)
-            down.push_back(-p);
+        for (auto p : lower.st) down.push_back(-p);
+
         vector<pt> hull = up;
-        for (int i = 1; i + 1 < (int)down.size(); i++)
+        for (int i = 1; i + 1 < (int)down.size(); i++) {
             hull.push_back(down[i]);
+        }
         return hull;
     }
 };
+
 
 // ==========================================
 // --- TANGENTS FROM EXTERIOR POINT O(log N)
