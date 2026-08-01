@@ -289,3 +289,86 @@ T maximum_dist_from_polygon_to_polygon_brute(vector<pt>& u, vector<pt>& v) {
     for (pt p1 : u) for (pt p2 : v) ans = max(ans, dist2(p1, p2));
     return sqrt(ans);
 }
+
+
+// ==========================================
+// --- 9. DYNAMIC CONVEX HULL ---
+// ==========================================
+
+struct cmp {
+    bool operator()(const pt &a, const pt &b) const {
+        if (sgn(a.x - b.x) != 0) return sgn(a.x - b.x) < 0;
+        return sgn(a.y - b.y) < 0;
+    }
+};
+
+struct upper_hull {
+    set<pt, cmp> st;
+    // 0 = outside
+    // 1 = strictly inside
+    // 2 = on boundary
+    int is_under(pt p) {
+        auto it = st.lower_bound(p);
+        if (it == st.end())
+            return 0;
+        if (sgn(it->x - p.x) == 0) {
+            return sgn(it->y - p.y) == 0 ? 2 : 1;
+        }
+        if (it == st.begin())
+            return 0;
+        int o = sgn(orient(p, *it, *prev(it)));
+        if (o > 0) return 1;
+        if (o == 0) return 2;
+        return 0;
+    }
+    void insert(pt p) {
+        if (is_under(p))
+            return;
+        auto it = st.lower_bound(pt(p.x, -1e18));
+        while (it != st.end() && sgn(it->x - p.x) == 0) {
+            it = st.erase(it);
+        }
+        it = st.insert(p).first;
+        while (next(it) != st.end() &&
+               next(next(it)) != st.end() &&
+               sgn(orient(*it, *next(it), *next(next(it)))) >= 0) {
+            st.erase(next(it));
+        }
+        while (it != st.begin() &&
+               prev(it) != st.begin() &&
+               sgn(orient(*prev(prev(it)), *prev(it), *it)) >= 0) {
+            st.erase(prev(it));
+        }
+    }
+};
+
+struct DynamicHull {
+    upper_hull upper, lower;
+    void insert(pt p) {
+        upper.insert(p);
+        lower.insert(-p);
+    }
+    // 0 = outside
+    // 1 = strictly inside
+    // 2 = on boundary
+    int is_inside(pt p) {
+        int u = upper.is_under(p);
+        int l = lower.is_under(-p);
+        if (!u || !l)
+            return 0;
+        return max(u, l);
+    }
+    // Returns hull vertices in strictly CCW order.
+    vector<pt> get_hull() {
+        vector<pt> up(upper.st.begin(), upper.st.end());
+        if (up.size() <= 1)
+            return up;
+        vector<pt> down;
+        for (auto p : lower.st)
+            down.push_back(-p);
+        vector<pt> hull = up;
+        for (int i = 1; i + 1 < (int)down.size(); i++)
+            hull.push_back(down[i]);
+        return hull;
+    }
+};
