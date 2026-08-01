@@ -41,3 +41,19 @@ int get_power_of_x_in_factorial(int k, int x) {
   if (mn == LLONG_MAX) return 0;
   return mn;
 }
+pair<int, vector<int>> extract_single_prime(int L, int R, int p) {
+  int n = R - L + 1;
+  vector<int> seq(n);
+  for (int i = 0; i < n; i++) {
+    seq[i] = L + i;
+  }
+  int tot = 0;
+  int st = (p - (L % p)) % p;
+  for (int i = st; i < n; i += p) {
+    while (seq[i] % p == 0) {
+      tot++;
+      seq[i] /= p; 
+    }
+  }
+  return {tot, seq};
+}
