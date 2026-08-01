@@ -198,13 +198,6 @@ ld circleSegmentArea(ld r, ld d){
 // --- 8. MINIMUM ENCLOSING CIRCLE ---
 // ==========================================
  
-pt circumCenter(pt a, pt b, pt c) {
-    b = b - a, c = c - a;
-    T d = 2.0L * cross(b, c);
-    if (sgn(d) == 0) return {numeric_limits<T>::quiet_NaN(), numeric_limits<T>::quiet_NaN()};
-    pt ans = perp_ccw(b * dot(c, c) - c * dot(b, b)) / d;
-    return a + ans;
-}
  
 // Welzl's algorithm for Minimum Enclosing Circle in O(N) expected time.
 // Returns a pair: {center_point, radius}
