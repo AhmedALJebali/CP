@@ -85,3 +85,6 @@ int count_permutations(const vector<int>& box_capacities, int k) {
   }
   return dp[k];
 }
+// Σ_{i=0}^{k} C(i+r,r) = C(k+r+1,r+1) (Hockey-Stick Identity)
+// Use for prefix sums of binomial coefficients / Stars & Bars (e.g. x1+...+xm ≤ k).
+int hockey(int k, int r) { return (k < 0 ? 0 : nCrMod(k + r + 1, r + 1)); }
