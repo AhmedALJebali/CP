@@ -330,4 +330,33 @@ T minimumEnclosingRectanglePerimeter(const vector<pt> &p) {
     }
     return ans;
 }
+// ==========================================
+// --- 4. RADIAL SORTING ---
+// ==========================================
+void sortClockwise(vector<pt>& pts, pt center) {
+    auto get_half = [&](pt p) {
+        if (sgn(p.y - center.y) < 0 || (sgn(p.y - center.y) == 0 && sgn(p.x - center.x) > 0)) return 0;
+        return 1;
+    };
+    sort(pts.begin(), pts.end(), [&](pt a, pt b) {
+        int half_a = get_half(a), half_b = get_half(b);
+        if (half_a != half_b) return half_a < half_b;
+        T cr = cross(a - center, b - center);
+        if (sgn(cr) != 0) return sgn(cr) < 0; 
+        return sgn(sq(a - center) - sq(b - center)) < 0;
+    });
+}
 
+void sortCounterClockwise(vector<pt>& pts, pt center) {
+    auto get_half = [&](pt p) {
+        if (sgn(p.y - center.y) > 0 || (sgn(p.y - center.y) == 0 && sgn(p.x - center.x) > 0)) return 0;
+        return 1;
+    };
+    sort(pts.begin(), pts.end(), [&](pt a, pt b) {
+        int half_a = get_half(a), half_b = get_half(b);
+        if (half_a != half_b) return half_a < half_b;
+        T cr = cross(a - center, b - center);
+        if (sgn(cr) != 0) return sgn(cr) > 0; 
+        return sgn(sq(a - center) - sq(b - center)) < 0;
+    });
+}
