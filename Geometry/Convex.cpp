@@ -372,3 +372,52 @@ struct DynamicHull {
         return hull;
     }
 };
+
+// ==========================================
+// --- TANGENTS FROM EXTERIOR POINT O(log N)
+// ==========================================
+pair<int, int> tangentsFromExteriorPoint(const vector<pt>& poly, pt q) {
+    int n = poly.size();
+    if (n < 3) return {0, min(1LL, n - 1)};
+    auto is_up = [&](int i) {
+        return sgn(cross(poly[i] - q, poly[(i + 1) % n] - q)) >= 0;
+    };
+    auto cmp_0 = [&](int m) {
+        return sgn(cross(poly[0] - q, poly[m] - q));
+    };
+    auto last_true = [&](auto predicate) {
+        int l = 0, r = n - 1, ans = 0;
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            if (predicate(m)) {
+                ans = m;
+                l = m + 1;
+            } else {
+                r = m - 1;
+            }
+        }
+        return ans;
+    };
+
+    bool u0 = is_up(0);
+    int left_tangent, right_tangent;
+
+    if (u0) {
+        left_tangent = (last_true([&](int m) {
+            return is_up(m) && cmp_0(m) >= 0;
+        }) + 1) % n;
+
+        right_tangent = (last_true([&](int m) {
+            return !(is_up(m) && cmp_0(m) < 0);
+        }) + 1) % n;
+    } else {
+        right_tangent = (last_true([&](int m) {
+            return !is_up(m) && cmp_0(m) <= 0;
+        }) + 1) % n;
+
+        left_tangent = (last_true([&](int m) {
+            return !(!is_up(m) && cmp_0(m) > 0);
+        }) + 1) % n;
+    }
+    return {right_tangent, left_tangent};
+}
