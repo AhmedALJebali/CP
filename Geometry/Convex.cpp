@@ -421,3 +421,93 @@ pair<int, int> tangentsFromExteriorPoint(const vector<pt>& poly, pt q) {
     }
     return {right_tangent, left_tangent};
 }
+// Returns the intersection points of an infinite directed line AB and a convex polygon.
+// The polygon MUST be strictly convex and in Counter-Clockwise (CCW) order.
+// Time Complexity: O(log N)
+// Returns:
+// - Empty vector if there is no intersection.
+// - 1 point if the line is tangent to a single vertex.
+// - 2 points if the line properly intersects the polygon (or coincides with an edge).
+vector<pt> lineConvexPolygonIntersection(const vector<pt>& poly, pt A, pt B) {
+    int n = poly.size();
+    if (n < 3) return {};
+    auto getExtremeVertex = [&](pt dir) {
+        auto cmp = [&](int i, int j) {
+            return sgn(dot(poly[i], dir) - dot(poly[j], dir));
+        };
+        auto is_up = [&](int i) {
+            return cmp((i + 1) % n, i) >= 0;
+        };
+        int l = 0, r = n - 1;
+        bool u0 = is_up(0);
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            bool um = is_up(m);
+            if (um == u0) {
+                if (um) {
+                    if (cmp(m, 0) >= 0) l = m + 1;
+                    else r = m - 1;
+                } else {
+                    if (cmp(m, 0) <= 0) l = m + 1;
+                    else r = m - 1;
+                }
+            } else {
+                if (um) l = m + 1;
+                else r = m - 1;
+            }
+        }
+        return l % n;
+    };
+    pt N = perp_ccw(B - A);
+    int max_idx = getExtremeVertex(N);
+    int min_idx = getExtremeVertex(-N);
+    auto eval = [&](int i) { return cross(B - A, poly[i] - A); };
+    T max_val = eval(max_idx);
+    T min_val = eval(min_idx);
+    if (sgn(max_val) < 0 || sgn(min_val) > 0) return {};
+    auto get_crossing = [&](int start, int end) {
+        int L = (end - start + n) % n;
+        int l = 0, r = L - 1;
+        int ans = 0;
+        T v_start = eval(start);
+        while (l <= r) {
+            int m = l + (r - l) / 2;
+            int idx = (start + m) % n;
+            T v_mid = eval(idx);
+            if (sgn(v_mid) == 0) {
+                ans = m;
+                break;
+            }
+            if (sgn(v_mid) == sgn(v_start)) {
+                ans = m;
+                l = m + 1;
+            } else {
+                r = m - 1;
+            }
+        }
+        return (start + ans) % n;
+    };
+    vector<pt> res;
+    auto add_pt = [&](pt p) {
+        for (pt existing : res) {
+            if (same(existing, p)) return;
+        }
+        res.push_back(p);
+    };
+    auto intersect_edge = [&](int i) {
+        pt C = poly[i], D = poly[(i + 1) % n];
+        T vC = eval(i), vD = eval((i + 1) % n);
+        if (sgn(vC) == 0) add_pt(C);
+        else if (sgn(vD) == 0) add_pt(D);
+        else {
+            // Find intersection point using proportion of distances
+            pt inter = C + (D - C) * (vC / (vC - vD));
+            add_pt(inter);
+        }
+    };
+    int cross1 = get_crossing(max_idx, min_idx);
+    intersect_edge(cross1);
+    int cross2 = get_crossing(min_idx, max_idx);
+    intersect_edge(cross2);
+    return res;
+}
