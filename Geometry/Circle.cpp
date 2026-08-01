@@ -318,3 +318,53 @@ T circleUnionArea(const vector<pair<pt,T>>& circles_input) {
     }
     return total_area;
 }
+// ==========================================
+// --- 9. CIRCLE-POLYGON INTERSECTION AREA ---
+// ==========================================
+
+// Helper: Computes the signed area of the intersection between a circle
+// centered at the origin (0,0) with radius r, and a triangle formed by (0,0), a, and b.
+T circleTriangleIntersection(T r, pt a, pt b) {
+    if (sgn(cross(a, b)) == 0) return 0.0L;
+    auto sector_or_triangle = [&](pt p1, pt p2) {
+        bool in1 = sgn(abs(p1) - r) <= 0;
+        bool in2 = sgn(abs(p2) - r) <= 0;
+        if (in1 && in2) {
+            return cross(p1, p2) / 2.0L;
+        }
+        return r * r * atan2(cross(p1, p2), dot(p1, p2)) / 2.0L;
+    };
+    line l(a, b);
+    pair<pt, pt> out;
+    int pts = circleLine(pt(0, 0), r, l, out);
+    vector<pt> p = {a};
+    if (pts > 0) {
+        pt p1 = out.first, p2 = out.second;
+        if (dot(p1 - a, b - a) > dot(p2 - a, b - a)) {
+            swap(p1, p2);
+        }
+        if (sgn(dot(p1 - a, b - a)) > 0 && sgn(dot(p1 - b, a - b)) > 0) {
+            p.push_back(p1);
+        }
+        if (pts == 2 && sgn(dot(p2 - a, b - a)) > 0 && sgn(dot(p2 - b, a - b)) > 0) {
+            p.push_back(p2);
+        }
+    }
+    p.push_back(b);
+    T ans = 0.0L;
+    for (size_t i = 0; i + 1 < p.size(); ++i) {
+        ans += sector_or_triangle(p[i], p[i+1]);
+    }
+    return ans;
+}
+T circlePolygonArea(pt c, T r, const vector<pt>& poly) {
+    T area = 0.0L;
+    int n = poly.size();
+    for (int i = 0; i < n; ++i) {
+        pt a = poly[i] - c;
+        pt b = poly[(i + 1) % n] - c;
+        area += circleTriangleIntersection(r, a, b);
+    }
+    return abs(area);
+}
+
