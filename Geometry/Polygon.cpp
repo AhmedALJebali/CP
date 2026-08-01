@@ -360,3 +360,76 @@ void sortCounterClockwise(vector<pt>& pts, pt center) {
         return sgn(sq(a - center) - sq(b - center)) < 0;
     });
 }
+// Calculates the total area covered by a set of rectangles.
+// rects: a vector of rectangles, where each rectangle is {x1, y1, x2, y2}
+// (x1, y1) is the bottom-left corner and (x2, y2) is the top-right corner.
+T areaUnionOfRectangles(const vector<array<T, 4>>& rects) {
+    if (rects.empty()) return 0.0;
+    struct Event {
+        T x1, y1, y2;
+        int type;
+        bool operator<(const Event& other) const {
+            if (abs(x1 - other.x1) > EPS)
+                return x1 < other.x1;
+            // Process insertions (+1) before removals (-1) at the same x-coordinate
+            return type > other.type;
+        }
+    };
+    vector<Event> events;
+    vector<T> Y;
+    // 1. Setup events and y-coordinates
+    for (const auto& r : rects) {
+        events.push_back({r[0], r[1], r[3], 1});
+        events.push_back({r[2], r[1], r[3], -1});
+        Y.push_back(r[1]);
+        Y.push_back(r[3]);
+    }
+    sort(all(events));
+    sort(all(Y));
+    // Coordinate compression with EPS tolerance for floating point deduplication
+    Y.erase(unique(all(Y), [](T a, T b) {
+        return abs(a - b) <= EPS;
+    }), Y.end());
+    int m = Y.size();
+    if (m < 2) return 0.0;
+    // Segment tree arrays
+    vector<int> cnt(4 * m, 0);   // Count remains integer
+    vector<T> len(4 * m, 0.0);   // Segment lengths are now floating-point (T)
+    // 2. Segment tree update function
+    auto update = [&](auto& self, int node, int l, int r, int ql, int qr, int val) -> void {
+        if (ql <= l && r <= qr) {
+            cnt[node] += val;
+        } else {
+            int mid = l + (r - l) / 2;
+            if (ql < mid) self(self, 2 * node, l, mid, ql, qr, val);
+            if (qr > mid) self(self, 2 * node + 1, mid, r, ql, qr, val);
+        }
+        // Calculate covered length dynamically
+        if (cnt[node] > 0) {
+            len[node] = Y[r] - Y[l];
+        } else {
+            if (r - l == 1) len[node] = 0.0; // leaf node
+            else len[node] = len[2 * node] + len[2 * node + 1];
+        }
+    };
+    // 3. Sweep line process
+    T total_area = 0.0;
+    T last_x = events[0].x1;
+    for (const auto& ev : events) {
+        total_area += (ev.x1 - last_x) * len[1];
+        last_x = ev.x1;
+        // Find compressed coordinates using EPS to avoid precision misses
+        auto get_idx = [&](T val) {
+            auto it = lower_bound(all(Y), val - EPS);
+            return (int)distance(Y.begin(), it);
+        };
+        int y1_idx = get_idx(ev.y1);
+        int y2_idx = get_idx(ev.y2);
+ 
+        if (y1_idx < y2_idx) {
+            update(update, 1, 0, m - 1, y1_idx, y2_idx, ev.type);
+        }
+    }
+    return total_area;
+}
+
