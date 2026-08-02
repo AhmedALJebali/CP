@@ -12,6 +12,20 @@ int phi(int n) {
     result -= result / n;
   return result;
 }
+// depned on the cnt of the primes sqrt(max)
+int get_phi(int n) {
+  if (n == 0) return 0;
+  int res = n;
+  for (int p : primes) {
+    if (p * p > n) break;
+    if (n % p == 0) {
+      while (n % p == 0) n /= p;
+      res -= res / p;
+    }
+  }
+  if (n > 1) res -= res / n;
+  return res;
+}
 const int MOD=1e9+7;
 int modPow(int a, int e, int m = MOD) {
   int res = 1;
