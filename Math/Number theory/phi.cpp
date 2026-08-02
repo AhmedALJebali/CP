@@ -12,6 +12,45 @@ int phi(int n) {
     result -= result / n;
   return result;
 }
+const int MOD=1e9+7;
+int modPow(int a, int e, int m = MOD) {
+  int res = 1;
+  a %= m;
+  while (e) {
+    if (e & 1) res = (1LL * res * a) % m;
+    a = (1LL * a * a) % m;
+    e >>= 1;
+  }
+  return res;
+}
+int get_cycle_length(int a, int m) {
+    if (m == 1) return 1;
+    int g = gcd(a, m);
+    while (g > 1) {
+        m /= g;
+        g = gcd(a, m);
+    }
+    if (m == 1) return 1;
+    int ph = phi(m);
+    int cyc = ph;
+    for (int i = 2; i * i <= ph; i++) {
+        if (ph % i == 0) {
+            // Check if we can divide the cycle length by this prime factor
+            while (cyc % i == 0 && modPow(a, cyc / i, m) == 1) {
+                cyc /= i;
+            }
+            while (ph % i == 0) ph /= i;
+        }
+    }
+    if (ph > 1) {
+        if (cyc % ph == 0 && modPow(a, cyc / ph, m) == 1) {
+            cyc /= ph;
+        }
+    }
+    return cyc;
+}
+
+
 // 1. Sieve Method (O(N log log N))
 vector<int> totient_sieve(int n) {
     vector<int> phi(n + 1); // Size n + 1 to allow 1-based indexing
