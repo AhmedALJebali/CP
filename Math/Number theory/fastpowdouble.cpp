@@ -1,6 +1,5 @@
-// logb(x)=y
-// x= b**y
-
+// y = log_b(x)
+// x = b^y
 ld fastPowdouble(ld base, ld exponent) {
   int intPart = (int)exponent;
   ld fracPart = exponent - intPart;
