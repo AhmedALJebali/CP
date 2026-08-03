@@ -140,38 +140,33 @@ void solve() {
   OfflineLayout idx(n);
   int q; cin >> q;
   vector<array<int, 3>> qu(q);
-  for (int i = 0; i < q; i++) {
-    int t; cin >> t;
-    qu[i][0] = t;
-    if (t == 1) {
-      int pos, val; cin >> pos >> val;
-      pos--;
-      qu[i][1] = idx.insert(pos);
-      qu[i][2] = val;
-    } else if (t == 2) {
-      int pos; cin >> pos;
-      pos--;
+  for (int i=0;i<q;i++) {
+    int t,pos,val;cin>>t;
+    if (t==1) {
+      cin>>pos>>val;pos--;
+      pos=idx.insert(pos);
+      qu[i]= {t,pos,val};
+    }else if (t==2) {
+      cin>>pos;pos--;
       idx.remove(pos);
-      qu[i][1] = pos;
+      qu[i]= {t,pos+1,0};
     } else {
-      int l, r; cin >> l >> r;
-      qu[i][1] = l;
-      qu[i][2] = r;
+      int l,r; cin>>l>>r;
+      qu[i]= {t,l,r};
     }
   }
   idx.build();
-  segment_tree seg(idx.sz() + 20);
-  for (int i = 0; i < n; i++) {
-    seg.update(idx.id(i), a[i], 1);
-  }
-  for (int i = 0; i < q; i++) {
-    int t = qu[i][0];
-    if (t == 1) {
-      seg.update(idx.id(qu[i][1]),  qu[i][2], 1);
-    } else if (t == 2) {
-      seg.remove(qu[i][1] + 1);
+  segment_tree seg(idx.size()+10);
+  for (int i=0;i<n;i++)seg.update(idx.id(i),a[i],1);
+  for (int i=0;i<q;i++) {
+    auto [t,i1,i2]=qu[i];
+    if (t==1) {
+      seg.update(idx.id(i1),i2,1);
+    }else if (t==2) {
+      seg.remove(i1);
     } else {
-      cout << seg.get_active(qu[i][1], qu[i][2]) << "\n";
+      cout<<seg.get_active(i1,i2)<<endl;
     }
   }
 }
+
