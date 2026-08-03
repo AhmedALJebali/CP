@@ -65,16 +65,16 @@ struct segment_tree {
 };
 struct OfflineLayout {
   // Total number of unique elements ever inserted.
-  int id_counter = 0; 
-  
+  int id_counter = 0;
+
   // Maintains the relative chronological order of all elements ever added.
   // Even if an element is "removed", it stays in this list to reserve its spot in the static layout.
-  list<int> order; 
-  
+  list<int> order;
+
   // Represents the current "live" state of the array.
   // Maps a current dynamic index to its node in the `order` list.
-  vector<list<int>::iterator> active; 
-  
+  vector<list<int>::iterator> active;
+
   // Stores the final mapped index for every unique element ID.
   vector<int> mapped_index;
 
@@ -96,7 +96,7 @@ struct OfflineLayout {
       order.push_back(new_id);
       active.push_back(--order.end());
     } else {
-      // Insert in the middle. 
+      // Insert in the middle.
       // Note: active.insert() takes O(V) time where V is the current number of active elements.
       auto it = active[pos];
       auto new_it = order.insert(it, new_id);
@@ -111,7 +111,7 @@ struct OfflineLayout {
     active.erase(active.begin() + pos);
   }
 
-  // Finalizes the static layout. MUST be called after all inserts/removes 
+  // Finalizes the static layout. MUST be called after all inserts/removes
   // and BEFORE calling id(identifier).
   void build() {
     mapped_index.assign(id_counter, -1);
@@ -127,7 +127,7 @@ struct OfflineLayout {
   }
 
   // Returns the total number of unique elements (the required size for your Segment Tree).
-  int sz() {
+  int size() {
     return id_counter;
   }
 };
@@ -169,4 +169,3 @@ void solve() {
     }
   }
 }
-
