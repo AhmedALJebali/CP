@@ -6,7 +6,6 @@ struct Node {
     real = r;
   }
 };
-
 struct segment_tree {
   int tree_size;
   vector<Node> segData;
@@ -64,78 +63,115 @@ struct segment_tree {
     return get(kth(l, 0, 0, tree_size), kth(r, 0, 0, tree_size) + 1, 0, 0, tree_size).val;
   }
 };
+struct OfflineLayout {
+  // Total number of unique elements ever inserted.
+  int id_counter = 0; 
+  
+  // Maintains the relative chronological order of all elements ever added.
+  // Even if an element is "removed", it stays in this list to reserve its spot in the static layout.
+  list<int> order; 
+  
+  // Represents the current "live" state of the array.
+  // Maps a current dynamic index to its node in the `order` list.
+  vector<list<int>::iterator> active; 
+  
+  // Stores the final mapped index for every unique element ID.
+  vector<int> mapped_index;
 
+  // Constructor: Pre-fills the structure with `initial_size` elements.
+  OfflineLayout(int initial_size = 0) {
+    for (int i = 0; i < initial_size; i++) {
+      int id = id_counter++;
+      order.push_back(id);
+      active.push_back(--order.end());
+    }
+  }
+
+  // Simulates inserting an element at dynamic index `pos`.
+  // Returns a unique identifier for this specific insertion.
+  int insert(int pos) {
+    int new_id = id_counter++;
+    if (pos == active.size()) {
+      // Append to the end
+      order.push_back(new_id);
+      active.push_back(--order.end());
+    } else {
+      // Insert in the middle. 
+      // Note: active.insert() takes O(V) time where V is the current number of active elements.
+      auto it = active[pos];
+      auto new_it = order.insert(it, new_id);
+      active.insert(active.begin() + pos, new_it);
+    }
+    return new_id;
+  }
+
+  // Simulates removing the element currently at dynamic index `pos`.
+  // Note: It is only removed from `active`. It remains in `order`.
+  void remove(int pos) {
+    active.erase(active.begin() + pos);
+  }
+
+  // Finalizes the static layout. MUST be called after all inserts/removes 
+  // and BEFORE calling id(identifier).
+  void build() {
+    mapped_index.assign(id_counter, -1);
+    int cur = 0;
+    for (int id : order) {
+      mapped_index[id] = cur++;
+    }
+  }
+
+  // Returns the static 0-based array index for a given element identifier.
+  int id(int identifier) {
+    return mapped_index[identifier];
+  }
+
+  // Returns the total number of unique elements (the required size for your Segment Tree).
+  int sz() {
+    return id_counter;
+  }
+};
 void solve() {
   int n; cin >> n;
   vector<int> a(n);
   for (int i = 0; i < n; i++) {
     cin >> a[i];
   }
+  OfflineLayout idx(n);
   int q; cin >> q;
-  vector<array<int,3>> qu(q);
+  vector<array<int, 3>> qu(q);
   for (int i = 0; i < q; i++) {
-    cin >> qu[i][0];
-    if (qu[i][0] == 1) {
-      cin >> qu[i][1] >> qu[i][2];
-    } else if (qu[i][0] == 2) {
-      cin >> qu[i][1];
+    int t; cin >> t;
+    qu[i][0] = t;
+    if (t == 1) {
+      int pos, val; cin >> pos >> val;
+      pos--;
+      qu[i][1] = idx.insert(pos);
+      qu[i][2] = val;
+    } else if (t == 2) {
+      int pos; cin >> pos;
+      pos--;
+      idx.remove(pos);
+      qu[i][1] = pos;
     } else {
-      cin >> qu[i][1] >> qu[i][2];
+      int l, r; cin >> l >> r;
+      qu[i][1] = l;
+      qu[i][2] = r;
     }
   }
-
-  list<int> order;
-  vector<list<int>::iterator> active;
-  int id_counter = 0;
-
-  vector<int> initial_ids(n);
+  idx.build();
+  segment_tree seg(idx.sz() + 20);
   for (int i = 0; i < n; i++) {
-    initial_ids[i] = id_counter++;
-    order.push_back(initial_ids[i]);
-    active.push_back(--order.end());
-  }
-
-  vector<int> ids(q, -1);
-  for (int i = 0; i < q; i++) {
-    if (qu[i][0] == 1) {
-      int idx = qu[i][1] - 1;
-      int new_id = id_counter++;
-      ids[i] = new_id;
-      if (idx == active.size()) {
-        order.push_back(new_id);
-        active.push_back(--order.end());
-      } else {
-        auto it = active[idx];
-        order.insert(it, new_id);
-        active.insert(active.begin() + idx, --it);
-      }
-    } else if (qu[i][0] == 2) {
-      int idx = qu[i][1] - 1;
-      active.erase(active.begin() + idx);
-    }
-  }
-  vector<int> idx(id_counter);
-  int cur = 0;
-  for (int id : order) idx[id] = cur++;
-  segment_tree seg(cur + 5);
-  for (int i = 0; i < n; i++) {
-    seg.update(idx[initial_ids[i]], a[i], 1);
+    seg.update(idx.id(i), a[i], 1);
   }
   for (int i = 0; i < q; i++) {
     int t = qu[i][0];
     if (t == 1) {
-      int id = ids[i];
-      int val = qu[i][2];
-      seg.update(idx[id], val, 1);
-    }
-    else if (t == 2) {
-      int idx = qu[i][1];
-      seg.remove(idx);
-    }
-    else {
-      int l = qu[i][1];
-      int r = qu[i][2];
-      cout << seg.get_active(l, r) << "\n";
+      seg.update(idx.id(qu[i][1]),  qu[i][2], 1);
+    } else if (t == 2) {
+      seg.remove(qu[i][1] + 1);
+    } else {
+      cout << seg.get_active(qu[i][1], qu[i][2]) << "\n";
     }
   }
 }
