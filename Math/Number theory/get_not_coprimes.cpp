@@ -19,3 +19,15 @@ int get_not_coprimes(int x, vector<int> &mul) {
   }
   return nc;
 }
+
+int countSubseqGcdOne(const vector<int>& a) {
+  map<int, int> dp;
+  for (int x : a) {
+    map<int, int> ndp = dp;
+    ndp[x]++;
+    for (auto [g, cnt] : dp)
+      ndp[gcd(g, x)] = (ndp[gcd(g, x)]+cnt)%MOD;
+    dp.swap(ndp);
+  }
+  return dp[1]%MOD;
+}
