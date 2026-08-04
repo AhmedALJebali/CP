@@ -1,4 +1,4 @@
-int get_coprimes(int x, vector<int> &mul) {
+int get_cot_coprimes(int x, vector<int> &mul) {
   vector<int> p;
   while (x > 1) {
     int prime = spf[x];
