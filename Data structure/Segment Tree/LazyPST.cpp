@@ -1,16 +1,3 @@
-#include <bits/stdc++.h>
-using namespace std;
-#define int long long
-#define ld long double
-#define all(v) v.begin(), v.end()
-#define FAST                    \
-ios_base::sync_with_stdio(0); \
-cin.tie(nullptr);             \
-cout.tie(nullptr);
-#define fileIO                      \
-freopen("input.txt", "r", stdin); \
-freopen("out.txt", "w", stdout)
-
 const int N =1e5;
 struct Node {
   int l,r,sum,lazy,hasLazy;
