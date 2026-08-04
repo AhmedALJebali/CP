@@ -85,3 +85,29 @@ int countSubseqGcdOne(vector<int>& a) {
   return ans;
 }
 
+const int MOD = 1e9 + 7;
+const int N = 2e5 + 10;
+int f[N];
+int dp[N];
+void solve() {
+  int n;
+  cin >> n;
+  for (int i = 0; i < n; ++i) {
+    int x;
+    cin >> x;
+    f[x]++;
+  }
+  for (int g = N - 1; g > 0; --g) {
+    int cnt = 0;
+    for (int o = g; o < N; o += g)
+      cnt += f[o];
+    dp[g] = modPow(2, cnt) - 1;
+    for (int o = g * 2; o < N; o += g) {
+      dp[g] -= dp[o];
+      if(dp[g] < 0) dp[g] += MOD;
+    }
+  }
+  cout << dp[1];
+}
+
+
