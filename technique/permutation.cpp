@@ -251,3 +251,33 @@ int inversionCount(const perm& p) {
     }
     return inv;
 }
+
+vector<int> permutationToLehmer(const perm& p) {
+    int n = p.size();
+    Fenwick fw(n);
+    for (int i = 0; i < n; i++)
+        fw.add(i, 1);
+
+    vector<int> code(n);
+
+    for (int i = 0; i < n; i++) {
+        code[i] = fw.query(p[i] - 1);
+        fw.add(p[i], -1);
+    }
+
+    return code;
+}
+perm lehmerToPermutation(const vector<int>& code) {
+    int n = code.size();
+    Fenwick fw(n);
+    for (int i = 0; i < n; i++)
+        fw.add(i, 1);
+    perm p(n);
+    for (int i = 0; i < n; i++) {
+        p[i] = fw.kth(code[i]);
+        fw.add(p[i], -1);
+    }
+    return p;
+}
+
+
