@@ -17,27 +17,68 @@ struct FormStandard       { T a, b_coeff, c; }; // ax + by = c
 // Unified 2D Line Structure
 // ==========================================
 struct Line {
-  pt p;          
-  pt v;          
-  pt n;          
-  T m;           
-  T b;           
+  pt p;
+  pt v;
+  pt n;
+  T m;
+  T b;
   bool isVertical;
-  // Constructor builds everything from two points
+  Line() {}
   Line(pt P, pt Q) {
     p = P;
-    v = Q - P;                 
-    n = pt(-v.y, v.x);         
-        
+    v = Q - P;
+    n = pt(-v.y, v.x);
+
     if (fabs(v.x) < EPS) {
       isVertical = true;
       m = 0;
-      b = p.x;               
+      b = p.x;
     } else {
       isVertical = false;
-      m = v.y / v.x;         
-      b = p.y - (m * p.x);   
+      m = v.y / v.x;
+      b = p.y - (m * p.x);
     }
+  }
+  Line(pt P, T input_m) {
+    p = P;
+    if (isinf(input_m)) {
+      isVertical = true;
+      m = 0;
+      b = p.x;
+      v = pt(0, 1);
+      n = pt(-1, 0);
+    }
+    else if (fabs(input_m) < EPS) {
+      isVertical = false;
+      m = 0;
+      b = p.y;
+      v = pt(1, 0);
+      n = pt(0, 1);
+    }
+    else {
+      isVertical = false;
+      m = input_m;
+      b = p.y - (m * p.x);
+      v = pt(1, m);
+      n = pt(-m, 1);
+    }
+  }
+  // Line L = Line::fromPointAndDir(P, dir);
+  static Line fromPointAndDir(pt P, pt dir) {
+    Line L;
+    L.p = P;
+    L.v = dir;
+    L.n = pt(-dir.y, dir.x);
+    if (fabs(dir.x) < EPS) {
+      L.isVertical = true;
+      L.m = 0;
+      L.b = P.x;
+    } else {
+      L.isVertical = false;
+      L.m = dir.y / dir.x;
+      L.b = P.y - (L.m * P.x);
+    }
+    return L;
   }
   // 1. Slope-Intercept: y = mx + b
   FormSlopeIntercept getSlopeIntercept() {
@@ -62,5 +103,14 @@ struct Line {
     } else {
       return {-m, 1, b}; // -mx + 1y = b
     }
+  }
+  bool isParallel(Line other) {
+    // Cross product of their direction vectors == 0
+    return fabs(v.x * other.v.y - v.y * other.v.x) < EPS;
+  }
+
+  bool isPerpendicular(Line other) {
+    // Dot product of their direction vectors == 0
+    return fabs(v.x * other.v.x + v.y * other.v.y) < EPS;
   }
 };
