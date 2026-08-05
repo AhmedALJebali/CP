@@ -117,3 +117,31 @@ struct Line {
     return Line::fromPointAndDir(X, Line(a, b).n);
   }
 };
+
+// power of a point p w.r.t a circle (c, r): >0 outside, 0 on circle, <0 inside
+T power(pt p, pt c, T r) { return sq(p - c) - r * r; }
+
+// radical axis of two circles (c1,r1) and (c2,r2): line of equal power, works even if circles don't intersect
+line radicalAxis(pt c1, T r1, pt c2, T r2) {
+    pt v = c2 - c1;
+    T cc = (sq(c1) - sq(c2) + r2 * r2 - r1 * r1) / 2.0L;
+    return line(v.x, v.y, dot(v, c1) + cc);
+}
+
+// Descartes' Circle Theorem: radius of 4th circle mutually tangent to 3 given mutually tangent circles
+T descartesFourthRadius(T r1, T r2, T r3) {
+    T k1 = 1.0L / r1, k2 = 1.0L / r2, k3 = 1.0L / r3;
+    T k4 = k1 + k2 + k3 + 2.0L * sqrt(k1 * k2 + k2 * k3 + k3 * k1);
+    return 1.0L / k4;
+}
+
+// length of the external common tangent segment between two circles given center distance d and radii r1, r2
+T externalTangentLength(T d, T r1, T r2) { return sqrt(max((T)0.0L, d * d - (r1 - r2) * (r1 - r2))); }
+// length of the internal common tangent segment between two circles given center distance d and radii r1, r2
+T internalTangentLength(T d, T r1, T r2) { return sqrt(max((T)0.0L, d * d - (r1 + r2) * (r1 + r2))); }
+// inverts point p through a circle of inversion centered at `center` with radius k (k*k / dist)
+pt invertPoint(pt p, pt center, T k) {
+    pt d = p - center;
+    T d2 = sq(d);
+    return center + d * (k * k / d2);
+}
