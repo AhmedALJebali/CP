@@ -129,3 +129,18 @@ int stirlingFirstOptimized(int n, int k) {
   }
   return dp[k];
 }
+// Compute permutations with specific cycle lengths
+vector<int> specific_cycle_lengths(int max_n, const vector<int>& allowed_lengths) {
+  vector<int> f(max_n + 1, 0);
+  f[0] = 1; 
+  for (int n = 1; n <= max_n; n++) {
+    int tot = 0;
+    for (int p : allowed_lengths) {
+      if (p > n) continue; 
+      int ways = (nPrMod(n - 1, p - 1) * f[n - p]) % MOD;
+      tot = (tot + ways) % MOD;
+    }
+    f[n] = tot;
+  }
+  return f;
+}
