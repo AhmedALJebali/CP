@@ -228,3 +228,15 @@ vector<int> applyPermutation(const vector<int>& a, const perm& p) {
 vector<int> undoPermutation(const vector<int>& a,const perm& p) {
     return applyPermutation(a, inverse(p));
 }
+// Counts permutations where p[i] != i for all i
+int countDerangements(int n) {
+    if (n == 0) return 1;
+    if (n == 1) return 0;
+    vector<long long> dp(n + 1);
+    dp[0] = 1;
+    dp[1] = 0;
+    for (int i = 2; i <= n; ++i) {
+        dp[i] = (i - 1) * (dp[i - 1] + dp[i - 2]); 
+    }
+    return dp[n];
+}
