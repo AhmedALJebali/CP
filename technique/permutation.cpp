@@ -1,15 +1,16 @@
-vector<int> nthPerm(int len, int nth) {
-  vector<int> identity(len), perm(len);
-  for (int i = 0; i < len; ++i) {
-    identity[i] = i;
-  }
-  for (int i = len - 1; i >= 0; --i) {
-    int p = nth / Fact[i];
-    perm[len - 1 - i] = identity[p];
-    identity.erase(identity.begin() + p);
-    nth %= Fact[i];
-  }
-  return perm;
+perm nthPerm(int n, long long kth) {
+    Fenwick fw(n);
+    for (int i = 0; i < n; i++)
+        fw.add(i, 1);
+    perm ans;
+    for (int i = n - 1; i >= 0; i--) {
+        int d = kth / Fact[i];
+        kth %= Fact[i];
+        int x = fw.kth(d);
+        ans.push_back(x);
+        fw.add(x, -1);
+    }
+    return ans;
 }
 // Given a permutation, what is its index?
 int PermToIndex(vector<int> perm) {
