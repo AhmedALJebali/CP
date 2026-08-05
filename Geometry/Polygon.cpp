@@ -433,3 +433,40 @@ T areaUnionOfRectangles(const vector<array<T, 4>>& rects) {
     return total_area;
 }
 
+// Takes O(N^2 * M) time
+vector<vector<int>> precompute_crossings(const vector<pt>& poly, const vector<pt>& points) {
+    int n = poly.size();
+    int m = points.size();
+    vector<vector<int>> tot(n, vector<int>(n, 0));
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            if (i == j) continue;
+            pt a = poly[i];
+            pt b = poly[j];
+            int crossings = 0;
+            for (int k = 0; k < m; k++) {
+                pt P = points[k];
+                bool up_cross = (sgn(P.y - a.y) >= 0 && sgn(P.y - b.y) < 0);
+                bool down_cross = (sgn(P.y - b.y) >= 0 && sgn(P.y - a.y) < 0);
+                if (up_cross) {
+                    if (sgn(cross(b - a, P - a)) > 0) crossings++;
+                } else if (down_cross) {
+                    if (sgn(cross(b - a, P - a)) < 0) crossings--;
+                }
+            }
+            tot[i][j] = crossings;
+        }
+    }
+    return tot;
+}
+// Takes O(K) time per query
+int get_points_inside(const vector<int>& poly_indices, const vector<vector<int>>& tot) {
+    int k = poly_indices.size();
+    int inside_count = 0;
+    for (int i = 0; i < k; i++) {
+        int u = poly_indices[i];
+        int v = poly_indices[(i + 1) % k];
+        inside_count += tot[u][v];
+    }
+    return abs(inside_count);
+}
