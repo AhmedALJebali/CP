@@ -113,4 +113,7 @@ struct Line {
     // Dot product of their direction vectors == 0
     return fabs(v.x * other.v.x + v.y * other.v.y) < EPS;
   }
+  Line perp_through_point_on_segmentab(pt a, pt b, pt X) {
+    return Line::fromPointAndDir(X, Line(a, b).n);
+  }
 };
