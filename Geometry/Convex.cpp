@@ -585,3 +585,46 @@ vector<pt> lineConvexPolygonIntersection(const vector<pt>& poly, pt A, pt B) {
     intersect_edge(cross2);
     return res;
 }
+
+
+// ==========================================
+// --- 10. MINKOWSKI DIFFERENCE & DISTANCES ---
+// ==========================================
+
+// Minkowski Difference of two Convex Polygons in O(N + M)
+vector<pt> minkowski_diff(vector<pt> P, vector<pt> Q) {
+    vector<pt> negQ;
+    negQ.reserve(Q.size());
+    for (const pt& p : Q) {
+        negQ.push_back(-p); // Reflect Q across the origin
+    }
+    return minkowski(P, negQ);
+}
+
+// Minimum and Maximum Distance between two Convex Polygons in O(N + M)
+// Returns a pair: {min_distance, max_distance}
+pair<T, T> convexPolygonsDistances(vector<pt> P, vector<pt> Q) {
+    vector<pt> MD = minkowski_diff(P, Q);
+    T max_dist = 0;
+    for (const pt& p : MD) {
+        max_dist = max(max_dist, abs(p));
+    }
+    T min_dist = 1e18; // Large value representing infinity
+    if (pointInConvexPolygon(MD, pt(0, 0), false)) {
+        min_dist = 0;
+    } else {
+        int n = MD.size();
+        for (int i = 0; i < n; i++) {
+            pt a = MD[i];
+            pt b = MD[(i + 1) % n];
+            if (same(a, b)) {
+                min_dist = min(min_dist, abs(a));
+            } else {
+                T t = clamp(dot(-a, b - a) / dist2(a, b), (T)0.0, (T)1.0);
+                pt proj = a + (b - a) * t;
+                min_dist = min(min_dist, abs(proj));
+            }
+        }
+    }
+    return {min_dist, max_dist};
+}
