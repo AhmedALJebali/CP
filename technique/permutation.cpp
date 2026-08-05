@@ -68,6 +68,13 @@ perm pow_cycle(perm inp, const perm& apply, int k) {
   }
   return multiply(inp, apply_k);
 }
+perm inverse(const perm& p) {
+    int n = p.size();
+    perm inv(n);
+    for (int i = 0; i < n; i++)
+        inv[p[i]] = i;
+    return inv;
+}
 // The winner is predetermined by the initial minimum swaps needed to sort the array (Total Elements - Number of Cycles).
 int minSwapsToSort(vector<int> arr) {
   int n = arr.size();
