@@ -478,6 +478,13 @@ bool get_direction(vector<pt> &p) {
     if (sgn(ans) > 0) return 1;
     return 0;
 }
+// -1 if strictly inside, 0 if on the polygon, 1 if strictly outside
+int is_point_in_polygon(const vector<pt> &p, const pt& z) { // O(n)
+    int k = windingNumber(p, z);
+    if (k == -1) return 0;   
+    if (k == 0) return 1;   
+    return -1;             
+}
 
 
 
