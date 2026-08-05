@@ -470,3 +470,16 @@ int get_points_inside(const vector<int>& poly_indices, const vector<vector<int>>
     }
     return abs(inside_count);
 }
+
+// 0 if cw, 1 if ccw
+bool get_direction(vector<pt> &p) {
+    double ans = 0; int n = p.size();
+    for (int i = 0; i < n; i++) ans += cross(p[i], p[(i + 1) % n]);
+    if (sgn(ans) > 0) return 1;
+    return 0;
+}
+
+
+
+
+
