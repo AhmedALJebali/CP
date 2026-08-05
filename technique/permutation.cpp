@@ -75,6 +75,23 @@ perm inverse(const perm& p) {
         inv[p[i]] = i;
     return inv;
 }
+vector<vector<int>> getCycles(const perm& p) {
+    int n = p.size();
+    vector<bool> vis(n);
+    vector<vector<int>> cycles;
+    for (int i = 0; i < n; i++) {
+        if (vis[i]) continue;
+        vector<int> cyc;
+        int u = i;
+        while (!vis[u]) {
+            vis[u] = true;
+            cyc.push_back(u);
+            u = p[u];
+        }
+        cycles.push_back(cyc);
+    }
+    return cycles;
+}
 // The winner is predetermined by the initial minimum swaps needed to sort the array (Total Elements - Number of Cycles).
 int minSwapsToSort(vector<int> arr) {
   int n = arr.size();
