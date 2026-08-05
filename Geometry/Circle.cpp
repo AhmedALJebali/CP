@@ -494,32 +494,25 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
         for (int k = 0; k < p_sz; ++k) {
             pt A = poly[k];
             pt B = poly[(k + 1) % p_sz];
-
-            vector<pt> intersections = getIntersections(center, R, A, B);
+            vector<pt> intersections = getSegmentCircleIntersections(center, R, A, B);
             for (const pt& p : intersections) {
                 poly_angles.push_back(arg(p - center));
             }
         }
-
         // Sort the boundary angles to process arcs sequentially
         sort(poly_angles.begin(), poly_angles.end());
-
         // Check the midpoint of each resulting arc
         for (size_t k = 0; k < poly_angles.size() - 1; ++k) {
             T left = poly_angles[k];
             T right = poly_angles[k+1];
-
             if (right - left < 1e-9) continue;
-
             T mid_angle = (left + right) / 2.0L;
             pt test_point = center + polar(R, mid_angle);
-
             // If the midpoint of this arc is OUTSIDE the polygon, this arc is exposed/covered
             if (!pointInPolygon(test_point, poly)) {
                 add_interval(left, right);
             }
         }
-
         // 4. Sort and Merge all intervals
         sort(intervals.begin(), intervals.end());
         vector<pair<T, T>> merged;
