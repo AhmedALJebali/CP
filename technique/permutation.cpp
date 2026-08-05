@@ -92,6 +92,21 @@ vector<vector<int>> getCycles(const perm& p) {
     }
     return cycles;
 }
+bool isEvenPermutation(const perm& p) {
+    int n = p.size();
+    vector<bool> vis(n);
+    int cycles = 0;
+    for (int i = 0; i < n; i++) {
+        if (vis[i]) continue;
+        cycles++;
+        int u = i;
+        while (!vis[u]) {
+            vis[u] = true;
+            u = p[u];
+        }
+    }
+    return ((n - cycles) % 2 == 0);
+}
 // The winner is predetermined by the initial minimum swaps needed to sort the array (Total Elements - Number of Cycles).
 int minSwapsToSort(vector<int> arr) {
   int n = arr.size();
