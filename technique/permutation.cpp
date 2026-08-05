@@ -241,3 +241,13 @@ int countDerangements(int n) {
     }
     return dp[n];
 }
+int inversionCount(const perm& p) {
+    int n = p.size();
+    Fenwick fw(n);
+    int inv = 0;
+    for (int i = n - 1; i >= 0; i--) {
+        inv += fw.query(p[i] - 1);
+        fw.add(p[i], 1);
+    }
+    return inv;
+}
