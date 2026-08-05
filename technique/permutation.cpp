@@ -218,3 +218,13 @@ vector<int> specific_cycle_lengths_with_k_cycles_all_n(int n, int k, const vecto
   }
   return res;
 }
+vector<int> applyPermutation(const vector<int>& a, const perm& p) {
+    int n = a.size();
+    vector<T> res(n);
+    for (int i = 0; i < n; i++)
+        res[p[i]] = a[i];
+    return res;
+}
+vector<int> undoPermutation(const vector<int>& a,const perm& p) {
+    return applyPermutation(a, inverse(p));
+}
