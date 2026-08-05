@@ -198,7 +198,6 @@ ld circleSegmentArea(ld r, ld d){
 // --- 8. MINIMUM ENCLOSING CIRCLE ---
 // ==========================================
  
- 
 // Welzl's algorithm for Minimum Enclosing Circle in O(N) expected time.
 // Returns a pair: {center_point, radius}
 pair<pt, T> welzl(vector<pt> P) { // Passed by value so we can shuffle safely
@@ -389,7 +388,7 @@ bool pointInPolygon(pt p, const vector<pt>& poly) {
 }
 
 // Intersect a circle (Center C, radius R) with a line segment (A to B)
-vector<pt> getIntersections(pt C, T R, pt A, pt B) {
+vector<pt> getSegmentCircleIntersections(pt C, T R, pt A, pt B) {
     vector<pt> res;
     pt V = B - A;
     T L = abs(V);
