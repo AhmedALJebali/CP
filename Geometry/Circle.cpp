@@ -700,3 +700,15 @@ vector<pair<pt, T>> get_apollonius_circle(pt c1, T r1, pt c2, T r2, pt c3, T r3)
     
     return unique_res;
 }
+// Calculates the area of the circular segment formed by the chord connecting two points (p1, p2) on the circle's boundary.
+T circleChordArea(pt c, T r, pt p1, pt p2) {
+    T chord_len = abs(p1 - p2);
+    if (chord_len > 2*r + EPS)
+        return 0;
+    if (abs(chord_len - 2*r) <= EPS)
+        return 0.5L * PI * r * r;
+    T cos_theta = 1.0L - (chord_len * chord_len) / (2.0L*r*r);
+    cos_theta = clamp(cos_theta, (T)-1, (T)1);
+    T theta = acos(cos_theta);
+    return 0.5L*r*r*(theta - sin(theta));
+}
