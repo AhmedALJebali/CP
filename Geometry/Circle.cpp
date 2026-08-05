@@ -562,3 +562,141 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
 
     return total_perimeter;
 }
+
+// ==========================================
+// --- CONSTRUCT CIRCLES THROUGH CONSTRAINTS ---
+// ==========================================
+
+// 1. Circle(s) of given radius passing through two points
+// Returns the center(s) of such circles (0, 1, or 2 centers)
+vector<pt> get_circle(pt p1, pt p2, T r) {
+    vector<pt> res;
+    T d2 = sq(p1 - p2);
+    if (sgn(d2) == 0) return res; // Points are identical
+    
+    T h2 = r * r - d2 / 4.0L;
+    if (sgn(h2) < 0) return res; // Points are too far apart
+    
+    pt mid = (p1 + p2) / 2.0L;
+    pt v = p2 - p1;
+    pt perp = perp_ccw(v) / abs(v);
+    T h = (sgn(h2) == 0) ? 0 : sqrt(max((T)0.0, h2));
+    
+    res.push_back(mid + perp * h);
+    if (sgn(h2) > 0) {
+        res.push_back(mid - perp * h);
+    }
+    return res;
+}
+
+// 2. Circle(s) of given radius tangent to a line and passing through a point
+// Returns the center(s) of such circles (up to 4 centers)
+vector<pt> get_circle(line l, pt p, T r) {
+    vector<pt> res;
+    // The center must lie on a line parallel to 'l' at distance 'r'
+    line l1 = l.shiftLeft(r);
+    line l2 = l.shiftLeft(-r);
+    
+    // The center must also be at distance 'r' from 'p' (lie on circle centered at p)
+    pair<pt, pt> out;
+    int pts1 = circleLine(p, r, l1, out);
+    if (pts1 >= 1) res.push_back(out.first);
+    if (pts1 == 2) res.push_back(out.second);
+    
+    int pts2 = circleLine(p, r, l2, out);
+    if (pts2 >= 1) res.push_back(out.first);
+    if (pts2 == 2) res.push_back(out.second);
+    
+    // Deduplicate in case of tangent overlaps or r == 0
+    vector<pt> unique_res;
+    for (pt c : res) {
+        bool dup = false;
+        for (pt u : unique_res) {
+            if (abs(c - u) <= EPS) { dup = true; break; }
+        }
+        if (!dup) unique_res.push_back(c);
+    }
+    return unique_res;
+}
+
+// 3. Problem of Apollonius: Circle(s) tangent to 3 given circles
+// Returns pairs of {center, radius} for up to 8 valid tangent circles
+vector<pair<pt, T>> get_apollonius_circle(pt c1, T r1, pt c2, T r2, pt c3, T r3) {
+    vector<pair<pt, T>> res;
+    
+    // Test all 8 sign combinations for (r ± r1), (r ± r2), (r ± r3)
+    for (int s1 : {-1, 1}) {
+        for (int s2 : {-1, 1}) {
+            for (int s3 : {-1, 1}) {
+                T R1 = s1 * r1, R2 = s2 * r2, R3 = s3 * r3;
+                
+                // Set up linear system by subtracting the circle equations
+                // A*x + B*y = C*r + D
+                T A2 = 2.0L * (c1.x - c2.x);
+                T B2 = 2.0L * (c1.y - c2.y);
+                T C2 = 2.0L * (R2 - R1);
+                T D2 = sq(c2) - sq(c1) - R2 * R2 + R1 * R1;
+
+                T A3 = 2.0L * (c1.x - c3.x);
+                T B3 = 2.0L * (c1.y - c3.y);
+                T C3 = 2.0L * (R3 - R1);
+                T D3 = sq(c3) - sq(c1) - R3 * R3 + R1 * R1;
+
+                T det = A2 * B3 - A3 * B2;
+                if (sgn(det) == 0) continue; // Collinear centers, handled as edge case
+
+                // Express center (x, y) in terms of r: x = Mx * r + Nx, y = My * r + Ny
+                T Mx = (C2 * B3 - C3 * B2) / det;
+                T Nx = (D2 * B3 - D3 * B2) / det;
+                T My = (A2 * C3 - A3 * C2) / det;
+                T Ny = (A2 * D3 - A3 * D2) / det;
+
+                // Substitute back into the equation for the first circle to solve for r
+                T N1x = Nx - c1.x;
+                T N1y = Ny - c1.y;
+
+                T a = Mx * Mx + My * My - 1.0L;
+                T b = 2.0L * (Mx * N1x + My * N1y - R1);
+                T c = N1x * N1x + N1y * N1y - R1 * R1;
+
+                if (sgn(a) == 0) {
+                    if (sgn(b) != 0) {
+                        T r_ans = -c / b;
+                        if (sgn(r_ans) >= 0) {
+                            res.push_back({pt(Mx * r_ans + Nx, My * r_ans + Ny), r_ans});
+                        }
+                    }
+                } else {
+                    T delta = b * b - 4.0L * a * c;
+                    if (sgn(delta) >= 0) {
+                        T d = (sgn(delta) == 0) ? 0 : sqrt(max((T)0.0, delta));
+                        T rA = (-b + d) / (2.0L * a);
+                        T rB = (-b - d) / (2.0L * a);
+                        
+                        if (sgn(rA) >= 0) {
+                            res.push_back({pt(Mx * rA + Nx, My * rA + Ny), rA});
+                        }
+                        if (sgn(delta) > 0 && sgn(rB) >= 0) {
+                            res.push_back({pt(Mx * rB + Nx, My * rB + Ny), rB});
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    // Deduplicate mathematically identical solutions caused by precision overlap
+    vector<pair<pt, T>> unique_res;
+    for (auto& C : res) {
+        bool dup = false;
+        for (auto& U : unique_res) {
+            if (abs(C.first - U.first) <= EPS && abs(C.second - U.second) <= EPS) {
+                dup = true; 
+                break;
+            }
+        }
+        if (!dup) unique_res.push_back(C);
+    }
+    
+    return unique_res;
+}
