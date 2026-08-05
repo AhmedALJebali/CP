@@ -645,3 +645,93 @@ pair<pair<pt, pt>, T> pointSetDiameter(vector<pt> pts) {
 T maxDistanceInPointSet(vector<pt> pts) {
     return pointSetDiameter(pts).second;
 }
+// Returns: {min_width, max_width}
+pair<T, T> convexPolygonWidthExtremes(const vector<pt>& poly) {
+    int n = poly.size();
+    if (n < 2) return {0, 0};
+    if (n == 2) return {0, abs(poly[1] - poly[0])};
+
+    T min_width = 1e18;
+    int j = 1;
+    
+    // Find Minimum Width (Edge to opposite vertex)
+    for (int i = 0; i < n; i++) {
+        pt v = poly[(i + 1) % n] - poly[i];
+        while (sgn(cross(v, poly[(j + 1) % n] - poly[j])) >= 0) {
+            j = (j + 1) % n;
+        }
+        T current_width = cross(v, poly[j] - poly[i]) / abs(v);
+        min_width = min(min_width, current_width);
+    }
+    
+    // Maximum width is precisely the diameter of the polygon
+    T max_width = convexDiameter(poly).second; 
+    
+    return {min_width, max_width};
+}
+
+pair<T, T> convexPolygonBoundingBoxAreaExtremes(const vector<pt>& poly) {
+    int n = poly.size();
+    if (n < 3) return {0, 0};
+    
+    T min_area = 1e18, max_area = 0;
+    int top = 1, right = 1, left = 1;
+    
+    for (int i = 0; i < n; i++) {
+        pt v = poly[(i + 1) % n] - poly[i];
+        
+        while (sgn(cross(v, poly[(top + 1) % n] - poly[top])) >= 0) 
+            top = (top + 1) % n;
+            
+        while (sgn(dot(v, poly[(right + 1) % n] - poly[right])) >= 0) 
+            right = (right + 1) % n;
+            
+        if (i == 0) left = top; 
+        while (sgn(dot(-v, poly[(left + 1) % n] - poly[left])) >= 0) 
+            left = (left + 1) % n;
+            
+        T height_scaled = cross(v, poly[top] - poly[i]);
+        T width_scaled = dot(v, poly[right] - poly[i]) - dot(v, poly[left] - poly[i]);
+        
+        T current_area = (height_scaled * width_scaled) / dist2(poly[(i + 1) % n], poly[i]);
+        
+        min_area = min(min_area, current_area);
+        max_area = max(max_area, current_area);
+    }
+    
+    return {min_area, max_area};
+}
+
+// 3. MINIMUM & MAXIMUM AREA TRIANGLE
+pair<T, T> convexPolygonTriangleAreaExtremes(const vector<pt>& poly) {
+    int n = poly.size();
+    if (n < 3) return {0, 0};
+    // Part 1: Minimum Area Triangle (always 3 adjacent points on a convex hull)
+    T min_area = 1e18;
+    for (int i = 0; i < n; i++) {
+        T cur = cross(poly[(i + 1) % n] - poly[i], poly[(i + 2) % n] - poly[i]);
+        min_area = min(min_area, abs(cur));
+    }
+    // Part 2: Maximum Area Triangle (3-pointer Rotating Calipers)
+    T max_area = 0;
+    int j = 1, k = 2;
+    for (int i = 0; i < n; i++) {
+        if (i == j) j = (j + 1) % n;
+        if (j == k) k = (k + 1) % n;
+        while (true) {
+            while (sgn(cross(poly[j] - poly[i], poly[(k + 1) % n] - poly[i]) - 
+                       cross(poly[j] - poly[i], poly[k] - poly[i])) >= 0) {
+                k = (k + 1) % n;
+            }
+            if (sgn(cross(poly[(j + 1) % n] - poly[i], poly[k] - poly[i]) - 
+                    cross(poly[j] - poly[i], poly[k] - poly[i])) >= 0) {
+                j = (j + 1) % n;
+            } else {
+                break;
+            }
+        }
+        max_area = max(max_area, abs(cross(poly[j] - poly[i], poly[k] - poly[i])));
+    }
+    
+    return {min_area / 2.0L, max_area / 2.0L};
+}
