@@ -4,6 +4,9 @@ typedef ld T;
 typedef complex<T> pt;
 #define x real()
 #define y imag()
+T sq(pt p) { return p.x * p.x + p.y * p.y; } // Squared magnitude |v|^2
+T dot(pt v, pt w) { return v.x * w.x + v.y * w.y; } // >0 acute, 0 right, <0 obtuse
+
 // ==========================================
 // the different Line Forms
 // ==========================================
@@ -116,18 +119,33 @@ struct Line {
   Line perp_through_point_on_segmentab(pt a, pt b, pt X) {
     return Line::fromPointAndDir(X, Line(a, b).n);
   }
+  pair<pt, pt> get_points() const {
+    return {p, p + v};
+  }
 };
 
 // power of a point p w.r.t a circle (c, r): >0 outside, 0 on circle, <0 inside
 T power(pt p, pt c, T r) { return sq(p - c) - r * r; }
 
 // radical axis of two circles (c1,r1) and (c2,r2): line of equal power, works even if circles don't intersect
-line radicalAxis(pt c1, T r1, pt c2, T r2) {
-    pt v = c2 - c1;
-    T cc = (sq(c1) - sq(c2) + r2 * r2 - r1 * r1) / 2.0L;
-    return line(v.x, v.y, dot(v, c1) + cc);
-}
+Line radicalAxis(pt c1, T r1, pt c2, T r2) {
+  pt v = c2 - c1;
+  T cc = (sq(c1) - sq(c2) + r2 * r2 - r1 * r1) / 2.0L;
 
+  // The line equation is: v.x * X + v.y * Y + cc = 0
+  // Direction vector is perpendicular to normal 'v'
+  pt dir(-v.y, v.x);
+
+  // Find a valid point P on the line to satisfy the equation
+  pt P;
+  if (fabs(v.x) > EPS) {
+    P = pt(-cc / v.x, 0);
+  } else {
+    P = pt(0, -cc / v.y);
+  }
+
+  return Line::fromPointAndDir(P, dir);
+}
 // Descartes' Circle Theorem: radius of 4th circle mutually tangent to 3 given mutually tangent circles
 T descartesFourthRadius(T r1, T r2, T r3) {
     T k1 = 1.0L / r1, k2 = 1.0L / r2, k3 = 1.0L / r3;
