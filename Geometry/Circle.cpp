@@ -386,32 +386,45 @@ bool pointInPolygon(pt p, const vector<pt>& poly) {
     }
     return inside;
 }
-
+vector<pt> getLineCircleIntersections(pt C, T R, pt A, pt B) {
+    vector<pt> res;
+    pt V = B - A;
+    T L = abs(V);
+    if (L < 1e-11) return res; 
+    pt U = V / L;
+    pt W = C - A;
+    T t_proj = (W.x * U.x) + (W.y * U.y);
+    pt P = A + U * t_proj;
+    T d = abs(C - P);
+    if (d > R + 1e-9) return res; 
+    T m = 0;
+    if (R > d) m = sqrt(max((T)0.0, R * R - d * d));
+    T t1 = t_proj - m;
+    T t2 = t_proj + m;
+    res.push_back(A + U * t1);
+    if (m > 1e-9) {
+        res.push_back(A + U * t2);
+    }
+    return res;
+}
 // Intersect a circle (Center C, radius R) with a line segment (A to B)
 vector<pt> getSegmentCircleIntersections(pt C, T R, pt A, pt B) {
     vector<pt> res;
     pt V = B - A;
     T L = abs(V);
     if (L < 1e-11) return res;
-
     pt U = V / L;
     pt W = C - A;
     T t_proj = dot(W, U);
-    pt P = A + U * t_proj; // Closest point on line to center
-
+    pt P = A + U * t_proj; 
     T d = abs(C - P);
-    if (d > R + 1e-9) return res; // Line is too far
-
+    if (d > R + 1e-9) return res;
     T m = 0;
     if (R > d) m = sqrt(max((T)0.0, R * R - d * d));
-
     T t1 = t_proj - m;
     T t2 = t_proj + m;
-
-    // Check if intersections lie on the segment
     if (t1 >= 0 && t1 <= L) res.push_back(A + U * t1);
     if (m > 1e-9 && t2 >= 0 && t2 <= L) res.push_back(A + U * t2);
-
     return res;
 }
 
@@ -419,7 +432,6 @@ vector<pt> getSegmentCircleIntersections(pt C, T R, pt A, pt B) {
 T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vector<pt>& poly) {
     int n = circles_input.size();
     if (n == 0 || poly.size() < 3) return 0.0L;
-
     vector<pair<pt, T>> circles;
     for (int i = 0; i < n; ++i) {
         if (sgn(circles_input[i].second) > 0) {
@@ -428,8 +440,6 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
     }
     n = circles.size();
     vector<bool> covered(n, false);
-
-    // 1. Mark completely identical/swallowed circles
     for (int i = 0; i < n; ++i) {
         for (int j = 0; j < n; ++j) {
             if (i == j) continue;
