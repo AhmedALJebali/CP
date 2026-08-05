@@ -628,3 +628,20 @@ pair<T, T> convexPolygonsDistances(vector<pt> P, vector<pt> Q) {
     }
     return {min_dist, max_dist};
 }
+
+// Finds the maximum distance between any two points in a set in O(N log N).
+// Returns a pair containing the two farthest points and their Euclidean distance.
+pair<pair<pt, pt>, T> pointSetDiameter(vector<pt> pts) {
+    int n = pts.size();
+    if (n < 2) {
+        return {{pt(0, 0), pt(0, 0)}, (T)0};
+    }
+    if (n == 2) {
+        return {{pts[0], pts[1]}, abs(pts[1] - pts[0])};
+    }
+    convex_hull(pts, false); 
+    return convexDiameter(pts);
+}
+T maxDistanceInPointSet(vector<pt> pts) {
+    return pointSetDiameter(pts).second;
+}
