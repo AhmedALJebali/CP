@@ -144,3 +144,38 @@ vector<int> specific_cycle_lengths(int max_n, const vector<int>& allowed_lengths
   }
   return f;
 }
+vector<int> specific_cycle_lengths_with_k_cycles_all_n(int n, int k, const vector<int>& allowed_lengths, bool k_or_less) {
+  vector<int> res(n + 1, 0);
+  if (k < 0) return res;
+  if (k == 0) {
+    res[0] = 1;
+    return res;
+  }
+  vector<int> prev_dp(n + 1, 0);
+  prev_dp[0] = 1;
+  if (k_or_less) {
+    res[0] = 1; 
+  }
+  for (int j = 1; j <= k; j++) {
+    vector<int> curr_dp(n + 1, 0);
+    for (int i = 1; i <= n; i++) {
+      int tot = 0;
+      for (int p : allowed_lengths) {
+        if (p > i) continue;
+        int ways = (1LL * nPrMod(i - 1, p - 1) * prev_dp[i - p]) % MOD;
+        tot = (tot + ways) % MOD;
+      }
+      curr_dp[i] = tot;
+    }
+    prev_dp = curr_dp;
+    if (k_or_less) {
+      for (int i = 1; i <= n; i++) {
+        res[i] = (res[i] + prev_dp[i]) % MOD;
+      }
+    }
+  }
+  if (!k_or_less) {
+    res = prev_dp;
+  }
+  return res;
+}
