@@ -735,3 +735,164 @@ pair<T, T> convexPolygonTriangleAreaExtremes(const vector<pt>& poly) {
     
     return {min_area / 2.0L, max_area / 2.0L};
 }
+// ==========================================
+// --- EXTREME VERTEX IN O(log N) ---
+// ==========================================
+
+// Finds the extreme vertex of a strictly CCW convex polygon in the direction of `z`.
+// The `top` parameter breaks ties if an edge is perfectly perpendicular to `z`:
+// top = true chooses the furthest vertex to the "left" (relative to z),
+// top = false chooses the furthest vertex to the "right".
+int extreme_vertex(const vector<pt>& poly, pt z, bool top = true) {
+    int n = poly.size();
+    if (n == 0) return -1;
+    if (n == 1) return 0;
+    
+    // Compare vertices based on dot product with z. 
+    // If tied, use cross product to break the tie.
+    auto cmp = [&](int i, int j) {
+        T d = dot(poly[i], z) - dot(poly[j], z);
+        if (sgn(d) != 0) return sgn(d);
+        T c = cross(poly[i], z) - cross(poly[j], z);
+        return top ? sgn(-c) : sgn(c);
+    };
+    
+    auto is_up = [&](int i) {
+        return cmp((i + 1) % n, i) >= 0;
+    };
+    
+    int l = 0, r = n - 1;
+    bool u0 = is_up(0);
+    
+    while (l <= r) {
+        int m = l + (r - l) / 2;
+        bool um = is_up(m);
+        
+        if (um == u0) {
+            if (um) {
+                if (cmp(m, 0) >= 0) l = m + 1;
+                else r = m - 1;
+            } else {
+                if (cmp(m, 0) <= 0) l = m + 1;
+                else r = m - 1;
+            }
+        } else {
+            if (um) l = m + 1;
+            else r = m - 1;
+        }
+    }
+    return l % n;
+}
+
+
+// ==========================================
+// --- POLYGON / LINE INTERSECTION (CLIPPING) ---
+// ==========================================
+
+// Cuts a polygon (convex or non-convex) with an infinite directed line A -> B.
+// Returns a new polygon representing the portion of `poly` strictly to the 
+// LEFT of the directed line AB (i.e. cross(B-A, P-A) >= 0).
+// You can compute the area or chord length directly from the returned polygon.
+vector<pt> polygon_line_intersection(const vector<pt>& poly, pt A, pt B) {
+    vector<pt> res;
+    int n = poly.size();
+    if (n < 3) return res;
+
+    pt dir = B - A;
+    for (int i = 0; i < n; i++) {
+        pt C = poly[i];
+        pt D = poly[(i + 1) % n];
+        
+        T crossC = cross(dir, C - A);
+        T crossD = cross(dir, D - A);
+        
+        // If C is on the valid side (left of AB or collinear)
+        if (sgn(crossC) >= 0) {
+            res.push_back(C);
+        }
+        
+        // If the edge CD properly crosses the line AB
+        if (sgn(crossC) * sgn(crossD) < 0) {
+            T t = crossC / (crossC - crossD); // Proportion along edge
+            res.push_back(C + (D - C) * t);
+        }
+    }
+    return res;
+}
+
+
+// ==========================================
+// --- DISTANCE FROM POINT TO POLYGON ---
+// ==========================================
+
+// Computes the minimum distance from point `p` to a general polygon.
+// Returns 0.0L if the point is strictly inside or on the boundary.
+T dist_from_point_to_polygon(pt p, const vector<pt>& poly) {
+    int n = poly.size();
+    if (n == 0) return 1e18; // Undefined
+    if (n == 1) return abs(p - poly[0]);
+
+    bool inside = false;
+    T min_dist = 1e18;
+
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+        pt a = poly[j];
+        pt b = poly[i];
+        
+        // Ray-casting algorithm to determine if the point is inside
+        if ((a.y > p.y) != (b.y > p.y)) {
+            T x_inter = a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y);
+            if (p.x < x_inter) {
+                inside = !inside;
+            }
+        }
+        
+        // Minimum distance to the current line segment
+        pt dir = b - a;
+        if (sgn(abs(dir)) == 0) {
+            min_dist = min(min_dist, abs(p - a));
+        } else {
+            T t = clamp(dot(p - a, dir) / sq(dir), (T)0.0, (T)1.0);
+            min_dist = min(min_dist, abs(p - (a + dir * t)));
+        }
+    }
+    
+    return inside ? 0.0L : min_dist;
+}
+
+
+// ==========================================
+// --- DISTANCE FROM POLYGON TO LINE ---
+// ==========================================
+
+// Computes the minimum distance from any point on `poly` to infinite line A -> B.
+// Returns 0.0L if the line intersects the polygon.
+// Time Complexity: O(N) for general polygons. (Can be optimized to O(log N) 
+// for strictly convex polygons using `extreme_vertex`).
+T dist_from_polygon_to_line(const vector<pt>& poly, pt A, pt B) {
+    int n = poly.size();
+    if (n == 0) return 1e18;
+
+    pt dir = B - A;
+    if (sgn(abs(dir)) == 0) return dist_from_point_to_polygon(A, poly);
+
+    T min_dist = 1e18;
+    bool has_left = false;
+    bool has_right = false;
+
+    for (int i = 0; i < n; i++) {
+        T c = cross(dir, poly[i] - A);
+        
+        if (sgn(c) > 0) has_left = true;
+        if (sgn(c) < 0) has_right = true;
+        
+        // Distance from vertex to line = |cross product| / |line segment|
+        T dist = abs(c) / abs(dir);
+        min_dist = min(min_dist, dist);
+    }
+
+    // If vertices exist on both sides, the line pierces the polygon
+    if (has_left && has_right) return 0.0L;
+
+    return min_dist;
+}
