@@ -88,3 +88,17 @@ int count_permutations(const vector<int>& box_capacities, int k) {
 // Σ_{i=0}^{k} C(i+r,r) = C(k+r+1,r+1) (Hockey-Stick Identity)
 // Use for prefix sums of binomial coefficients / Stars & Bars (e.g. x1+...+xm ≤ k).
 int hockey(int k, int r) { return (k < 0 ? 0 : nCrMod(k + r + 1, r + 1)); }
+// Distribute N items into K boxes, each box MUST have AT LEAST x items
+int stars_and_bars_at_least_x(int n, int k, int x) {
+  if (n < k * x) return 0;
+  int remaining = n - (k * x);
+  if (k == 0 && remaining == 0) return 1;
+  if (k == 0) return 0;
+  return nCrMod(remaining + k - 1, k - 1);
+}
+// Distribute N items into K boxes
+int stars_and_bars_non_negative(int n, int k) {
+  if (k == 0 && n == 0) return 1;
+  if (k == 0) return 0;
+  return nCrMod(n + k - 1, k - 1);
+}
