@@ -122,3 +122,6 @@ int stars_and_bars_bounded(int n, int k, int x, int y) {
   }
   return ans;
 }
+int count_Subseq_Sum_Equal_S(int s) {
+  return modPow(2,s-1);
+}
