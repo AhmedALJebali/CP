@@ -14,12 +14,8 @@ ld modPow(ld base, int exp) {
   }
   return result;
 }
-/*
- * Function to calculate the number of ways to get an EXACT sum.
- * n: number of dice
- * m: number of faces on each die
- * target: the exact sum we want to achieve
- */
+
+// Returns the number of ways (modulo MOD) to roll an exact sum of 'target' using 'n' dice with 'm' faces, optimized with prefix sums.
 int countWaysExact(int n, int m, int target) {
     // dp[i][j] = number of ways to get sum 'j' using 'i' dice
     vector<vector<int>> dp(n + 1, vector<int>(target + 1, 0));
@@ -40,6 +36,7 @@ int countWaysExact(int n, int m, int target) {
     }
     return dp[n][target];
 }
+// Returns the number of ways to roll an exact 'targetSum' using 'N' dice with 'M' faces, solved mathematically using the inclusion-exclusion principle.
 int countWaysExact2(int N, int M, int targetSum) {
     if (targetSum < N || targetSum > (long long)N * M) {
         return 0;
@@ -58,6 +55,8 @@ int countWaysExact2(int N, int M, int targetSum) {
     }
     return total_ways;
 }
+
+// Returns the cumulative number of ways (modulo MOD) to roll any sum less than or equal to 'target' using 'n' dice with 'm' faces.
 int countWaysUpTo(int n, int m, int target) {
     int ret = 0;
     for (int i = n; i <= target; i++) {
@@ -66,11 +65,7 @@ int countWaysUpTo(int n, int m, int target) {
     return ret;
 }
 
-/*
- * n: Total number of trials (e.g., total dice rolls)
- * k: Number of successful occurrences wanted
- * p: Probability of success in a SINGLE trial (e.g., 1.0/6.0 for getting a 4)
- */
+// Returns the probability of achieving exactly 'k' successes in 'n' independent trials given a single-trial success probability of 'p'.
 ld binomialProbability(int n, int k, ld p) {
   if (k < 0 || k > n || p < 0.0 || p > 1.0) {
     return 0.0;
