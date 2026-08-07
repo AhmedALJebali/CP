@@ -41,6 +41,8 @@ int get_power_of_x_in_factorial(int k, int x) {
   if (mn == LLONG_MAX) return 0;
   return mn;
 }
+
+// Returns the total power of prime 'p' in the product of the range [L, R], and the modified sequence after dividing out all factors of 'p'.
 pair<int, vector<int>> extract_single_prime(int L, int R, int p) {
   int n = R - L + 1;
   vector<int> seq(n);
