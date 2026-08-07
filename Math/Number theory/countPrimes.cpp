@@ -1,4 +1,4 @@
-// Computes the prime-counting function pi(n) using the Lucy-Hedgehog algorithm.
+// Returns the exact total number of prime numbers less than or equal to 'n' (the prime-counting function pi(n)).
 // Time Complexity: O(n^(3/4)) | Space Complexity: O(sqrt(n)) | Handles n up to 10^11.
 int count_primes(int n) {
   if (n <= 1) return 0;
