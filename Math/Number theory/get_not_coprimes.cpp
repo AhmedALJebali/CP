@@ -1,3 +1,4 @@
+// Returns the number of elements (tracked via the 'mul' array) that share at least one common prime factor with 'x' (i.e., are not coprime to 'x').
 int get_not_coprimes(int x, vector<int> &mul) {
   vector<int> p;
   while (x > 1) {
@@ -19,7 +20,7 @@ int get_not_coprimes(int x, vector<int> &mul) {
   }
   return nc;
 }
-
+// Returns the number of subsequences of array 'a' that have a GCD of exactly 1 (modulo 10^9+7) using dynamic programming.
 int countSubseqGcdOne(const vector<int>& a) {
   map<int, int> dp;
   for (int x : a) {
@@ -31,7 +32,7 @@ int countSubseqGcdOne(const vector<int>& a) {
   }
   return dp[1]%MOD;
 }
-
+// Returns the number of subsequences of array 'a' with a GCD of exactly 1 (modulo 10^9+7), optimized using a linear sieve and Möbius inversion.
 int countSubseqGcdOne(vector<int>& a) {
   int n=a.size();
   int MAXA = *max_element(all(a));
@@ -84,7 +85,7 @@ int countSubseqGcdOne(vector<int>& a) {
   if (ans < 0) ans += MOD;
   return ans;
 }
-
+// Reads an array and outputs the number of subsequences with a GCD of exactly 1 (modulo 10^9+7) using frequency counting and inclusion-exclusion over multiples.
 const int MOD = 1e9 + 7;
 const int N = 2e5 + 10;
 int f[N];
