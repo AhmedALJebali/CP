@@ -226,3 +226,18 @@ int solve_2D_Grid_Klein4(int N, int M, int C) {
     int ans = (power(C, E_id) + power(C, E_180) + power(C, E_hflip) + power(C, E_vflip)) % MOD;
     return (ans * modInverse(4)) % MOD;
 }
+// Returns the number of distinct valid ways to color an NxM toroidal grid (a grid that wraps around its edges) using C colors, treating configurations that match under cyclic shifts (translations) as identical
+int solve_2D_Torus_Shifts(int N, int M, int C) {
+    int ans = 0;
+    for (int i = 0; i < N; i++) {
+        int gi = cp_gcd(i == 0 ? N : i, N);
+        int p = N / gi;
+        for (int j = 0; j < M; j++) {
+            int gj = cp_gcd(j == 0 ? M : j, M);
+            int q = M / gj;
+            int cycles = gi * gj * cp_gcd(p, q);
+            ans = (ans + power(C, cycles)) % MOD;
+        }
+    }
+    return (ans * modInverse((N % MOD) * (M % MOD) % MOD)) % MOD;
+}
