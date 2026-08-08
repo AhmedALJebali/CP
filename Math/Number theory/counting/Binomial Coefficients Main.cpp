@@ -88,6 +88,25 @@ int count_permutations(const vector<int>& box_capacities, int k) {
   }
   return dp[k];
 }
-
-
-
+// the number of ways to pick k items from n1 type-1 + n0 type-0 items
+// such that the number of type-1 items chosen is a strict majority (> k/2).
+int countMajority(int n1, int n0, int k) {
+  if (n1 == n0) {
+    int m = n1;
+    int total = nCrMod(2 * m, k);
+    if (k % 2 == 1) {
+      return total * inv_fact[2] % MOD;
+    } else {
+      int mid = nCrMod(m, k / 2) * nCrMod(m, k / 2) % MOD;
+      return ((total - mid + MOD) % MOD) * inv_fact[2] % MOD;
+    }
+  }
+  int lo = max(k / 2 + 1, k - n0);
+  lo = max(lo, (int)0);
+  int hi = min(k, n1);
+  int ans = 0;
+  for (int ons = lo; ons <= hi; ons++) {
+    ans = (ans + nCrMod(n1, ons) * nCrMod(n0, k - ons)) % MOD;
+  }
+  return ans;
+}
