@@ -286,3 +286,43 @@ int burnside_from_generators(vector<Rot3> gens, vector<Vec3> parts, int C) {
     }
     return (total * modInverse((int)group.size())) % MOD;
 }
+// Returns a list of the 8 3D coordinate points corresponding to the corners (vertices) of a cube centered at the origin.
+vector<Vec3> cube_vertices() {
+    vector<Vec3> v;
+    for (int x : {-1, 1}) for (int y : {-1, 1}) for (int z : {-1, 1}) v.push_back({x, y, z});
+    return v;
+}
+// Returns a list of the 6 3D coordinate points corresponding to the centers of the faces of a cube centered at the origin.
+vector<Vec3> cube_faces() {
+    return { {1,0,0},{-1,0,0},{0,1,0},{0,-1,0},{0,0,1},{0,0,-1} };
+} 
+// Returns a list of the 12 3D coordinate points corresponding to the midpoints of the edges of a cube centered at the origin.
+vector<Vec3> cube_edges() {
+    vector<Vec3> e;
+    for (int a : {-1, 1}) for (int b : {-1, 1}) { e.push_back({a,b,0}); e.push_back({a,0,b}); e.push_back({0,a,b}); }
+    return e;
+}
+// Returns a list of two mathematical function generators (a 90-degree face rotation and a 120-degree vertex rotation) that, when combined, can produce all 24 proper 3D rotations of a cube or octahedron.
+vector<Rot3> cube_rotation_generators() {
+    Rot3 faceRot = [](Vec3 p) -> Vec3 { return { -p.y, p.x, p.z }; };
+    Rot3 vertRot = [](Vec3 p) -> Vec3 { return { p.y, p.z, p.x }; };
+    return { faceRot, vertRot };
+}
+// Returns a list of function generators that produce all 48 symmetries of a cube, including both proper 3D rotations and reflections (spatial inversion).
+vector<Rot3> cube_full_symmetry_generators() {
+    auto gens = cube_rotation_generators();
+    gens.push_back([](Vec3 p) -> Vec3 { return { -p.x, -p.y, -p.z }; });
+    return gens;
+}
+// Returns the number of distinct valid ways to color the faces, vertices, or edges of a cube using C colors, either under proper 3D rotations or full 3D symmetry (including reflections)
+int solve_3D_Cube_Faces(int C)    { return burnside_from_generators(cube_rotation_generators(), cube_faces(), C); }
+int solve_3D_Cube_Vertices(int C) { return burnside_from_generators(cube_rotation_generators(), cube_vertices(), C); }
+int solve_3D_Cube_Edges(int C)    { return burnside_from_generators(cube_rotation_generators(), cube_edges(), C); }
+int solve_3D_Cube_Faces_FullSym(int C)    { return burnside_from_generators(cube_full_symmetry_generators(), cube_faces(), C); }
+int solve_3D_Cube_Vertices_FullSym(int C) { return burnside_from_generators(cube_full_symmetry_generators(), cube_vertices(), C); }
+int solve_3D_Cube_Edges_FullSym(int C)    { return burnside_from_generators(cube_full_symmetry_generators(), cube_edges(), C); }
+
+//Returns the number of distinct valid ways to color the faces, vertices, or edges of an octahedron using C colors
+int solve_3D_Octahedron_Faces(int C)    { return solve_3D_Cube_Vertices(C); }
+int solve_3D_Octahedron_Vertices(int C) { return solve_3D_Cube_Faces(C); }
+int solve_3D_Octahedron_Edges(int C)    { return solve_3D_Cube_Edges(C); }
