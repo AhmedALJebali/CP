@@ -13,3 +13,15 @@ int countSetBits(long long n) {
     int rest = countSetBits(n - (1LL << x));
     return bits_up_to_power + msbs_from_power_to_n + rest;
 }
+int count(int n){
+    int res = 0;
+    for (int i = 0; i < 60; i++) {
+        int bit = 1LL << i;
+        int cycle = bit << 1LL;
+        int full = n / cycle;
+        int rem = n % cycle;
+        res += full * bit;
+        res += max(0LL, rem - bit + 1);
+    }
+    cout << res << '\n';
+}
