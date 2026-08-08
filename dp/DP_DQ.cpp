@@ -15,7 +15,7 @@ void dq(int l,int r,int optl,int optr) {
   dp[mid] = INF;
   for (int i = optl; i <= min(mid, optr); i++) {
     int c = cost(i, mid);
-    if ((prv[i-1] + c) < dp[mid]) {
+    if ((prv[i-1] + c) <= dp[mid]) {
       dp[mid] = prv[i-1] + c;
       opt = i;
     }
@@ -67,7 +67,61 @@ void dq(int l, int r, int optl, int optr) {
   dp[mid] = 0;
   for (int i = optl; i <= min(mid, optr); i++) {
     int cost = qry(i,mid);
-    if (prv[i - 1] + cost > dp[mid]) {
+    if (prv[i - 1] + cost >= dp[mid]) {
+      dp[mid] = prv[i - 1] + cost;
+      opt = i;
+    }
+  }
+  dq(l, mid - 1, optl, opt);
+  dq(mid + 1, r, opt, optr);
+}
+
+
+
+const int N = 35000+ 5;
+
+int dp[N], prv[N],c[N];
+int cur=0,L = 1, R = 0;
+deque<int>f[N];
+
+void add(int idx,int dir) {
+  if (!f[c[idx]].empty()) {
+    cur -= f[c[idx]].back()- f[c[idx]].front();
+  }
+  if (dir==2)
+    f[c[idx]].push_back(idx);
+  else
+    f[c[idx]].push_front(idx);
+
+  cur += f[c[idx]].back()- f[c[idx]].front();
+}
+void remove(int idx,int dir) {
+  cur -= f[c[idx]].back()- f[c[idx]].front();
+
+  if (dir==2)
+    f[c[idx]].pop_back();
+  else
+    f[c[idx]].pop_front();
+
+  if (!f[c[idx]].empty()) {
+    cur += f[c[idx]].back()- f[c[idx]].front();
+  }
+}
+ int qry(int l, int r) {
+  while (L > l) add(--L,1);
+  while (R < r) add(++R,2);
+  while (L < l) remove(L++,1);
+  while (R > r) remove(R--,2);
+  return cur;
+}
+void dq(int l, int r, int optl, int optr) {
+  if (l > r) return;
+  int mid = l + (r - l) / 2;
+  int opt = optl;
+  dp[mid] = 1e9;
+  for (int i = optl; i <= min(mid, optr); i++) {
+    int cost = qry(i,mid);
+    if (prv[i - 1] + cost <= dp[mid]) {
       dp[mid] = prv[i - 1] + cost;
       opt = i;
     }
