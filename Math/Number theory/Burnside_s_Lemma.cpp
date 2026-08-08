@@ -241,3 +241,48 @@ int solve_2D_Torus_Shifts(int N, int M, int C) {
     }
     return (ans * modInverse((N % MOD) * (M % MOD) % MOD)) % MOD;
 }
+// Returns the number of distinct valid ways to color the specified parts (vertices, edges, or faces) of a 3D object using C colors, by automatically generating the full symmetry group from basic rotations and applying Burnside's Lemma
+struct Vec3 { int x, y, z; bool operator<(const Vec3&o) const { return tie(x,y,z)<tie(o.x,o.y,o.z);} bool operator==(const Vec3&o) const {return x==o.x&&y==o.y&&z==o.z;} };
+using Rot3 = function<Vec3(Vec3)>;
+int burnside_from_generators(vector<Rot3> gens, vector<Vec3> parts, int C) {
+    int n = parts.size();
+    map<Vec3,int> idx;
+    for (int i = 0; i < n; i++) idx[parts[i]] = i;
+    auto toPerm = [&](const Rot3& f) {
+        vector<int> p(n);
+        for (int i = 0; i < n; i++) {
+            Vec3 img = f(parts[i]);
+            auto it = idx.find(img);
+            p[i] = it->second; 
+        }
+        return p;
+    };
+    vector<vector<int>> genPerms;
+    for (auto& g : gens) genPerms.push_back(toPerm(g));
+
+    vector<int> identity(n); iota(identity.begin(), identity.end(), 0);
+    set<vector<int>> group; group.insert(identity);
+    queue<vector<int>> q; q.push(identity);
+    while (!q.empty()) {
+        vector<int> cur = q.front(); q.pop();
+        for (auto& g : genPerms) {
+            vector<int> nxt(n);
+            for (int i = 0; i < n; i++) nxt[i] = g[cur[i]];
+            if (group.insert(nxt).second) q.push(nxt);
+        }
+    }
+    int total = 0;
+    for (auto& perm : group) {
+        vector<bool> vis(n, false);
+        int cycles = 0;
+        for (int i = 0; i < n; i++) {
+            if (!vis[i]) {
+                cycles++;
+                int j = i;
+                while (!vis[j]) { vis[j] = true; j = perm[j]; }
+            }
+        }
+        total = (total + power(C, cycles)) % MOD;
+    }
+    return (total * modInverse((int)group.size())) % MOD;
+}
