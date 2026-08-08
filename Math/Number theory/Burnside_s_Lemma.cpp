@@ -129,3 +129,8 @@ int count_cycle_proper_colorings(int N, int C) {
     int ans = (term + sign * ((C - 1) % MOD) % MOD + MOD) % MOD;
     return ans;
 }
+// Returns the number of valid ways to color a straight path (line) using C colors such that no two adjacent vertices share the same color
+int count_path_proper_colorings(int N, int C) {
+    if (N <= 0) return 1;
+    return (C % MOD) * power(C - 1, N - 1) % MOD;
+}
