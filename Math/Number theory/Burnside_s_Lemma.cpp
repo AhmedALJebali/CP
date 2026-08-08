@@ -326,3 +326,30 @@ int solve_3D_Cube_Edges_FullSym(int C)    { return burnside_from_generators(cube
 int solve_3D_Octahedron_Faces(int C)    { return solve_3D_Cube_Vertices(C); }
 int solve_3D_Octahedron_Vertices(int C) { return solve_3D_Cube_Faces(C); }
 int solve_3D_Octahedron_Edges(int C)    { return solve_3D_Cube_Edges(C); }
+// Returns the number of distinct valid ways to color the vertices, faces, or edges of a regular tetrahedron using C colors, under both proper 3D rotations and full symmetry (including reflections)
+vector<Vec3> tetra_vertices() { return { {1,1,1}, {1,-1,-1}, {-1,1,-1}, {-1,-1,1} }; }
+vector<Vec3> tetra_faces()    { return tetra_vertices(); } 
+vector<Vec3> tetra_edge_midpoints() {
+    auto V = tetra_vertices();
+    vector<Vec3> mids;
+    for (int i = 0; i < 4; i++) for (int j = i + 1; j < 4; j++)
+        mids.push_back({ V[i].x+V[j].x, V[i].y+V[j].y, V[i].z+V[j].z }); // 2x midpoint, still unique per edge
+    return mids;
+}
+vector<Rot3> tetra_rotation_generators() {
+    Rot3 r1 = [](Vec3 p) -> Vec3 { return { p.y, p.z, p.x }; };       // 120-degree vertex axis
+    Rot3 r2 = [](Vec3 p) -> Vec3 { return { p.x, -p.y, -p.z }; };     // 180-degree edge axis
+    return { r1, r2 };
+}
+vector<Rot3> tetra_full_symmetry_generators() {
+    auto gens = tetra_rotation_generators();
+    gens.push_back([](Vec3 p) -> Vec3 { return { p.y, p.x, p.z }; }); // swap x,y: odd permutation of vertices => reflection
+    return gens;
+}
+int solve_3D_Tetrahedron_Vertices(int C) { return burnside_from_generators(tetra_rotation_generators(), tetra_vertices(), C); }
+int solve_3D_Tetrahedron_Faces(int C)    { return burnside_from_generators(tetra_rotation_generators(), tetra_faces(), C); }
+int solve_3D_Tetrahedron_Edges(int C)    { return burnside_from_generators(tetra_rotation_generators(), tetra_edge_midpoints(), C); }
+int solve_3D_Tetrahedron_Vertices_FullSym(int C) { return burnside_from_generators(tetra_full_symmetry_generators(), tetra_vertices(), C); }
+int solve_3D_Tetrahedron_Faces_FullSym(int C)    { return burnside_from_generators(tetra_full_symmetry_generators(), tetra_faces(), C); }
+int solve_3D_Tetrahedron_Edges_FullSym(long long C)    { return burnside_from_generators(tetra_full_symmetry_generators(), tetra_edge_midpoints(), C); }
+
