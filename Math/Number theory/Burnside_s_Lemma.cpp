@@ -147,4 +147,40 @@ int least_rotation(const string& s) {
     }
     return min(i, j);
 }
+// Returns the unique sequence of Lyndon words into which the given string can be factorized.
+vector<string> duval_lyndon_factorization(const string& s) {
+    int n = s.size(), i = 0;
+    vector<string> factors;
+    while (i < n) {
+        int j = i + 1, k = i;
+        while (j < n && s[k] <= s[j]) {
+            if (s[k] < s[j]) k = i; else k++;
+            j++;
+        }
+        while (i <= k) { factors.push_back(s.substr(i, j - k)); i += j - k; }
+    }
+    return factors;
+}
 
+// ==========================================
+// 2D: Grids and Matrices
+// ==========================================
+
+// Grid rotations only (C4 if square, else {id, 180}).
+int solve_2D_Grid_Rotations(int N, int M, int C) {
+    int MOD_phi = MOD - 1;
+    unsigned int S = (unsigned int)N * M;
+
+    if (N == M) {
+        int E1 = S % MOD_phi;
+        int E2 = ((S + 1) / 2) % MOD_phi;
+        int E3 = ((S + 3) / 4) % MOD_phi;
+        int ans = (power(C, E1) + power(C, E2) + 2 * power(C, E3)) % MOD;
+        return (ans * modInverse(4)) % MOD;
+    } else {
+        int E1 = S % MOD_phi;
+        int E2 = ((S + 1) / 2) % MOD_phi;
+        int ans = (power(C, E1) + power(C, E2)) % MOD;
+        return (ans * modInverse(2)) % MOD;
+    }
+}
