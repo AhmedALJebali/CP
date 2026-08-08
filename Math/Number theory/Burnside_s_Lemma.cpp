@@ -215,3 +215,14 @@ int solve_2D_Grid_VFlip_Only(int N, int M, int C) {
     int ans = (power(C, E1) + power(C, E2)) % MOD;
     return (ans * modInverse(2)) % MOD;
 }
+// Returns the number of distinct valid ways to color an NxM rectangular grid using C colors, treating configurations that match under 180-degree rotations, horizontal flips, or vertical flips as identical
+int solve_2D_Grid_Klein4(int N, int M, int C) {
+    unsigned int S = (unsigned int)N * M;
+    int MOD_phi = MOD - 1;
+    int E_id   = S % MOD_phi;
+    int E_180  = ((S + 1) / 2) % MOD_phi;
+    int E_hflip = (M * ((N + 1) / 2)) % MOD_phi;
+    int E_vflip = (N * ((M + 1) / 2)) % MOD_phi;
+    int ans = (power(C, E_id) + power(C, E_180) + power(C, E_hflip) + power(C, E_vflip)) % MOD;
+    return (ans * modInverse(4)) % MOD;
+}
