@@ -206,3 +206,12 @@ int solve_2D_Grid_HFlip_Only(int N, int M, int C) {
     int ans = (power(C, E1) + power(C, E2)) % MOD;
     return (ans * modInverse(2)) % MOD;
 }
+// Returns the number of distinct valid ways to color an NxM grid using C colors, treating grids that match when flipped across their vertical axis (left-to-right) as identical
+int solve_2D_Grid_VFlip_Only(int N, int M, int C) {
+    unsigned int S = (unsigned int)N * M;
+    int MOD_phi = MOD - 1;
+    int E1 = S % MOD_phi;
+    int E2 = (N * ((M + 1) / 2)) % MOD_phi;
+    int ans = (power(C, E1) + power(C, E2)) % MOD;
+    return (ans * modInverse(2)) % MOD;
+}
