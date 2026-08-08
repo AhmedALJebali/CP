@@ -43,5 +43,36 @@ void solve(){
   }
   cout << prv[n-1] << "\n";
 }
- 
+ const int N = 35000 + 5;
+
+int dp[N], prv[N],c[N],frq[N];
+int cur=0,L = 1, R = 0;
+void add(int idx) {
+  if (++frq[c[idx]] == 1) cur++;
+}
+void remove(int idx) {
+  if (--frq[c[idx]] == 0) cur--;
+}
+ int qry(int l, int r) {
+  while (L > l) add(--L);
+  while (R < r) add(++R);
+  while (L < l) remove(L++);
+  while (R > r) remove(R--);
+  return cur;
+}
+void dq(int l, int r, int optl, int optr) {
+  if (l > r) return;
+  int mid = l + (r - l) / 2;
+  int opt = optl;
+  dp[mid] = 0;
+  for (int i = optl; i <= min(mid, optr); i++) {
+    int cost = qry(i,mid);
+    if (prv[i - 1] + cost > dp[mid]) {
+      dp[mid] = prv[i - 1] + cost;
+      opt = i;
+    }
+  }
+  dq(l, mid - 1, optl, opt);
+  dq(mid + 1, r, opt, optr);
+}
 
