@@ -170,7 +170,6 @@ vector<string> duval_lyndon_factorization(const string& s) {
 int solve_2D_Grid_Rotations(int N, int M, int C) {
     int MOD_phi = MOD - 1;
     unsigned int S = (unsigned int)N * M;
-
     if (N == M) {
         int E1 = S % MOD_phi;
         int E2 = ((S + 1) / 2) % MOD_phi;
@@ -189,15 +188,21 @@ int solve_2D_Grid_Rotations(int N, int M, int C) {
 int solve_2D_Grid_All_Symmetries(int N, int C) {
     int MOD_phi = MOD - 1;
     unsigned int S = (unsigned int)N * N;
-
     int E1 = S % MOD_phi;
     int E2 = ((S + 1) / 2) % MOD_phi;
     int E3 = ((S + 3) / 4) % MOD_phi;
     int ans = (power(C, E1) + power(C, E2) + 2 * power(C, E3)) % MOD;
-
     int E_HV = (N * ((N + 1) / 2)) % MOD_phi;
     int E_Diag = ((S + N) / 2) % MOD_phi;
     ans = (ans + 2 * power(C, E_HV) + 2 * power(C, E_Diag)) % MOD;
-
     return (ans * modInverse(8)) % MOD;
+}
+// Returns the number of distinct valid ways to color an NxM grid using C colors, treating grids that match when flipped across their horizontal axis (top-to-bottom) as identical
+int solve_2D_Grid_HFlip_Only(int N, int M, int C) {
+    unsigned int S = (unsigned int)N * M;
+    int MOD_phi = MOD - 1;
+    int E1 = S % MOD_phi;
+    int E2 = (M * ((N + 1) / 2)) % MOD_phi;
+    int ans = (power(C, E1) + power(C, E2)) % MOD;
+    return (ans * modInverse(2)) % MOD;
 }
