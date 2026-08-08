@@ -166,7 +166,7 @@ vector<string> duval_lyndon_factorization(const string& s) {
 // 2D: Grids and Matrices
 // ==========================================
 
-// Grid rotations only (C4 if square, else {id, 180}).
+// Returns the number of distinct valid ways to color an NxM grid using C colors, treating grids that can be rotated to match each other as identical
 int solve_2D_Grid_Rotations(int N, int M, int C) {
     int MOD_phi = MOD - 1;
     unsigned int S = (unsigned int)N * M;
