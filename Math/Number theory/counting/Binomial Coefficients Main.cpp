@@ -62,6 +62,16 @@ int waysAtLeast(int n1, int n2, int k, int need) {
   }
   return ans;
 }
+// Returns the number of ways to choose 'k' total items from two groups (of sizes 'n1' and 'n2') such that at least 'need1' items are selected from the first group and at least 'need2' from the second.
+int waysAtLeast(int n1, int n2, int k, int need1, int need2) {
+  if (need1 + need2 > k || need1 > n1 || need2 > n2 || k > n1 + n2)
+    return 0;
+  int ans = 0;
+  for (int i = max(need1, k - n2); i <= min(n1, k - need2); i++) {
+    ans = (ans + (1LL * nCr(n1, i) * nCr(n2, k - i)));
+  }
+  return ans;
+}
 // Returns the number of ways to distribute exactly 'k' distinct items into distinct boxes without exceeding each box's maximum capacity.
 int count_permutations(const vector<int>& box_capacities, int k) {
   vector<int> dp(k + 1, 0);
