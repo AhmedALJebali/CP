@@ -122,3 +122,10 @@ int count_binary_necklaces_exact_k(int N, int k) {
     }
     return (ans * modInverse(N)) % MOD;
 }
+// Returns the number of valid ways to color an N-vertex circular ring using C colors such that no two adjacent vertices share the same color
+int count_cycle_proper_colorings(int N, int C) {
+    int term = power(C - 1, N);
+    int sign = (N % 2 == 0) ? 1 : -1;
+    int ans = (term + sign * ((C - 1) % MOD) % MOD + MOD) % MOD;
+    return ans;
+}
