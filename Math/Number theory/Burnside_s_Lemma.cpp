@@ -134,3 +134,17 @@ int count_path_proper_colorings(int N, int C) {
     if (N <= 0) return 1;
     return (C % MOD) * power(C - 1, N - 1) % MOD;
 }
+// Returns the 0-based starting index of the lexicographically smallest cyclic rotation of the given string
+int least_rotation(const string& s) {
+    string t = s + s;
+    int n = t.size(), i = 0, j = 1, k = 0;
+    while (i < s.size() && j < s.size() && k < n) {
+        char a = t[i + k], b = t[j + k];
+        if (a == b) { k++; continue; }
+        if (a > b) i += k + 1; else j += k + 1;
+        if (i == j) j++;
+        k = 0;
+    }
+    return min(i, j);
+}
+
