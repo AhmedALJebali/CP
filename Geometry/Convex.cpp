@@ -31,43 +31,61 @@ T orientedAngle(pt a, pt b, pt c) {
   else
     return 2*PI - angle(b-a, c-a);
 }
-
+/**
+ * Calculates the signed angle swept from vector AB to vector AC around a common pivot point A.
+ * Returns a positive value for(CCW) turns and a negative value for (CW) turns, within the range [-PI, PI].
+ */
 T angleTravelled(pt a, pt b, pt c) {
     T ampli = angle(b - a, c - a);
     if (sgn(orient(a, b, c)) > 0) return ampli;
     if (sgn(orient(a, b, c)) < 0) return -ampli;
     return (sgn(dot(b - a, c - a)) >= 0) ? (T)0 : PI;
 }
-
-// ==========================================
-// --- 3. COLLINEARITY & SEGMENTS ---
-// ==========================================
+/**
+ * Determines whether three points lie on the same infinite straight line.
+ * Returns true if the points are collinear, and false otherwise.
+ */
 bool collinear(pt a, pt b, pt c) {
     return sgn(orient(a, b, c)) == 0;
 }
-
+/**
+ * Returns true if 'p' lies on the segment [a, b], inclusive of the endpoints 'a' and 'b', and false otherwise.
+ */
 bool onSegment(pt a, pt b, pt p) {
     return sgn(orient(a, b, p)) == 0 && sgn(dot(p - a, p - b)) <= 0;
 }
 
-// ==========================================
-// --- 4. POLYGON BASICS ---
-// ==========================================
+/**
+ * Calculates the signed area of a polygon
+ * Returns a positive area if the vertices are ordered counter-clockwise (CCW), and a negative area if clockwise (CW).
+ */
 T signedAreaPolygon(const vector<pt>& p) {
     int n = p.size(); T area = 0;
     for (int i = 0; i < n; i++) area += cross(p[i], p[(i + 1) % n]);
     return area / 2.0L;
 }
 
+/**
+ * Calculates the absolute area of a polygon.
+ */
 T areaPolygon(const vector<pt>& p) { return fabsl(signedAreaPolygon(p)); }
 
+/**
+ * Calculates the total perimeter (sum of edge lengths) of a polygon.
+ * Works for any simple polygon (convex or concave) as long as the vertices are provided in cyclic order.
+ */
 T perimeterPolygon(const vector<pt>& p) {
     int n = p.size(); if (n < 2) return 0;
     T per = 0;
     for (int i = 0; i < n; i++) per += abs(p[(i + 1) % n] - p[i]);
     return per;
 }
-
+/**
+ * Determines whether a given polygon is convex.
+ * Useful for validating polygon shapes before applying algorithms that require convexity, like Minkowski sums.
+ * A constant reference to a vector of 2D points 'p' representing a polygon in cyclic order, and an optional 'strict' flag.
+ * Returns true if the polygon is convex (respecting the strict flag for collinear edges), and false if it is concave or has fewer than 3 vertices.
+ */
 bool isConvex(const vector<pt>& p, bool strict = false) {
     int n = p.size(); if (n < 3) return false;
     int dir = 0;
@@ -83,12 +101,21 @@ bool isConvex(const vector<pt>& p, bool strict = false) {
     }
     return true;
 }
-
+/**
+ * Ensures the vertices of a polygon are ordered strictly counter-clockwise (CCW).
+ * takes A reference to a vector of 2D points 'p' representing a polygon. The vertices must be in cyclic order, but can be either CW or CCW.
+ * Modifies the input vector in-place. If the points were in CW order , it reverses them to become CCW.
+ */
 void normalizeCCW(vector<pt>& p) {
     if (sgn(signedAreaPolygon(p)) < 0) reverse(p.begin(), p.end());
 }
 
-// Rotates polygon so the lowest (then leftmost) point becomes p[0]
+/**
+ * Cyclically shifts the vertices of a polygon so the bottom-leftmost point becomes the first element.
+ * Useful for standardizing polygons before operations like Minkowski addition or polygon equality checks.
+ * A reference to a vector of 2D points 'p' representing a polygon in cyclic order.
+ * Modifies the input vector in-place. The relative order of the vertices (CW or CCW) remains unchanged, but the starting point (p[0]) is rotated.
+ */
 void reorderConvex(vector<pt>& p) {
     int pos = 0;
     for (int i = 1; i < (int)p.size(); i++) {
@@ -99,14 +126,15 @@ void reorderConvex(vector<pt>& p) {
     rotate(p.begin(), p.begin() + pos, p.end());
 }
 
-// ==========================================
-// --- 5. CONVEX HULL (Graham Scan) ---
-// ==========================================
 bool cw(pt a, pt b, pt c, bool col) {
     int o = sgn(orient(a, b, c));
     return o < 0 || (col && o == 0);
 }
-
+/**
+ * Computes the convex hull of a set of 2D points in O(N log N) time using Graham Scan.
+ * take A reference to an UNORDERED vector of 2D points ('a') representing a point cloud, and a boolean flag ('include_collinear') to keep points flat on the edges.
+ * Modifies the input vector 'a' in-place to contain only the convex hull vertices, ordered in CLOCKWISE (CW) direction.
+ */
 void convex_hull(vector<pt>& a, bool include_collinear = true) {
     pt p0 = *min_element(a.begin(), a.end(), [](pt a, pt b) {
         return make_pair(a.y, a.x) < make_pair(b.y, b.x);
@@ -138,39 +166,29 @@ void convex_hull(vector<pt>& a, bool include_collinear = true) {
     a = st;
 }
 
-// ==========================================
-// --- 6. ADVANCED POLYGON ALGORITHMS ---
-// ==========================================
-
+ /**
+ * Determines if a given point 'q' is strictly or non-strictly inside a convex polygon.
+ * Runs in O(log N) time using binary search.
+ */
 bool pointInConvexPolygon(const vector<pt>& poly, pt q, bool strict = true) {
     int n = poly.size();
     if (n == 0) return false;
     if (n == 1) return !strict && same(poly[0], q);
     if (n == 2) return !strict && onSegment(poly[0], poly[1], q);
-
-    // The rest of this function assumes poly is CCW. Detect the actual
-    // orientation once — O(1), since a strict convex polygon can't have
-    // poly[0], poly[1], poly[2] collinear — and fold the sign into every
-    // cross-product test below, so this now works for CW input too.
     T dir = (sgn(orient(poly[0], poly[1], poly[2])) >= 0) ? (T)1 : (T)-1;
     auto cx = [&](pt v, pt w) { return dir * cross(v, w); };
-
     if (sgn(cx(poly[1] - poly[0], q - poly[0])) < 0) return false;
     if (sgn(cx(poly[n - 1] - poly[0], q - poly[0])) > 0) return false;
-
     if (onSegment(poly[0], poly[1], q) || onSegment(poly[0], poly[n - 1], q)) return !strict;
-
     int l = 1, r = n - 1;
     while (r - l > 1) {
         int m = (l + r) / 2;
         if (sgn(cx(poly[m] - poly[0], q - poly[0])) >= 0) l = m;
         else r = m;
     }
-
     auto cr = cx(poly[l + 1] - poly[l], q - poly[l]);
     if (sgn(cr) < 0) return false;
     if (sgn(cr) == 0) return !strict;
-
     if (sgn(cx(poly[l] - poly[0], q - poly[0])) == 0) {
         if (sgn(cross(poly[1] - poly[0], poly[l] - poly[0])) == 0 ||
             sgn(cross(poly[n - 1] - poly[0], poly[l] - poly[0])) == 0) {
@@ -199,25 +217,48 @@ vector<pt> minkowski(vector<pt> P, vector<pt> Q) {
     return res;
 }
 
-// Diameter of Convex Polygon (Rotating Calipers) - O(N)
+/**
+ * Calculates the diameter of a convex polygon (maximum distance between any two vertices).
+ * Input:  A vector of 2D points 'poly' representing a convex polygon. The vertices 
+ *         must be in cyclic order, but it can be either clockwise (CW) or 
+ *         counter-clockwise (CCW).
+ * Output: A pair containing a nested pair of the two farthest points, 
+ *         and the distance (diameter) between them: {{pt1, pt2}, distance}.
+ */
 pair<pair<pt, pt>, T> convexDiameter(const vector<pt>& poly) {
     int n = poly.size();
-    if (n < 2) return {{pt(0, 0), pt(0, 0)}, 0};
-    if (n == 2) return {{poly[0], poly[1]}, abs(poly[1] - poly[0])};
-
-    int j = 1; T best = 0; pair<pt, pt> ans = {poly[0], poly[0]};
+    if (n < 2)
+        return {{pt(0, 0), pt(0, 0)}, 0};
+    if (n == 2)
+        return {{poly[0], poly[1]}, abs(poly[1] - poly[0])};
+    int j = 1;
+    T best = 0;
+    pair<pt, pt> ans = {poly[0], poly[0]};
+    auto check = [&](int a, int b) {
+        T d = abs(poly[a] - poly[b]);
+        if (d > best) {
+            best = d;
+            ans = {poly[a], poly[b]};
+        }
+    };
     for (int i = 0; i < n; i++) {
         int ni = (i + 1) % n;
-        // Advance j while the triangle area strictly increases
-        while (sgn(cross(poly[ni] - poly[i], poly[(j + 1) % n] - poly[i]) - 
-                   cross(poly[ni] - poly[i], poly[j] - poly[i])) > 0) {
+        auto area = [&](int k) {
+            return abs(cross(
+                poly[ni] - poly[i],
+                poly[k] - poly[i]
+            ));
+        };
+        while (area((j + 1) % n) > area(j)) {
             j = (j + 1) % n;
         }
-        T d1 = abs(poly[i] - poly[j]);
-        if (d1 > best) { best = d1; ans = {poly[i], poly[j]}; }
-        
-        T d2 = abs(poly[ni] - poly[j]);
-        if (d2 > best) { best = d2; ans = {poly[ni], poly[j]}; }
+        check(i, j);
+        check(ni, j);
+        int nj = (j + 1) % n;
+        if (sgn(area(nj) - area(j)) == 0) {
+            check(i, nj);
+            check(ni, nj);
+        }
     }
     return {ans, best};
 }
