@@ -321,10 +321,6 @@ vector<pt> hp_intersect(vector<Halfplane> H) {
     return ret;
 }
 
-// ==========================================
-// --- 8. MISC BRUTE FORCE (O(N*M)) ---
-// ==========================================
-// Note: Maximum distance between two polygons. For large inputs, compute Minkowski(U, -V) instead.
 T maximum_dist_from_polygon_to_polygon_brute(vector<pt>& u, vector<pt>& v) {
     T ans = 0;
     for (pt p1 : u) for (pt p2 : v) ans = max(ans, dist2(p1, p2));
@@ -488,9 +484,11 @@ struct DynamicHull {
 };
 
 
-// ==========================================
-// --- TANGENTS FROM EXTERIOR POINT O(log N)
-// ==========================================
+/**
+ * Finds the indices of the two tangent vertices from a strictly exterior point to a convex polygon in O(log N) time using binary search.
+ * polygon MUST be in strict Counter-Clockwise (CCW) 
+ * Returns a pair of integers {right_tangent_index, left_tangent_index} representing the indices of the extreme right and left tangent vertices as viewed from 'q'.
+ */
 pair<int, int> tangentsFromExteriorPoint(const vector<pt>& poly, pt q) {
     int n = poly.size();
     if (n < 3) return {0, min(1LL, n - 1)};
@@ -536,13 +534,11 @@ pair<int, int> tangentsFromExteriorPoint(const vector<pt>& poly, pt q) {
     }
     return {right_tangent, left_tangent};
 }
-// Returns the intersection points of an infinite directed line AB and a convex polygon.
-// The polygon MUST be strictly convex and in Counter-Clockwise (CCW) order.
-// Time Complexity: O(log N)
-// Returns:
-// - Empty vector if there is no intersection.
-// - 1 point if the line is tangent to a single vertex.
-// - 2 points if the line properly intersects the polygon (or coincides with an edge).
+/**
+ * Computes the intersection points of an infinite directed line and a convex polygon in O(log N) time using binary search.
+ * The input polygon MUST be strictly convex and ordered strictly Counter-Clockwise (CCW) for the binary search to correctly partition and traverse the boundary.
+ * Returns a vector of 2D points containing: an empty vector if there is no intersection, 1 point if the line is perfectly tangent to a vertex, or 2 points if it properly intersects the polygon.
+ */
 vector<pt> lineConvexPolygonIntersection(const vector<pt>& poly, pt A, pt B) {
     int n = poly.size();
     if (n < 3) return {};
@@ -626,12 +622,6 @@ vector<pt> lineConvexPolygonIntersection(const vector<pt>& poly, pt A, pt B) {
     intersect_edge(cross2);
     return res;
 }
-
-
-// ==========================================
-// --- 10. MINKOWSKI DIFFERENCE & DISTANCES ---
-// ==========================================
-
 // Minkowski Difference of two Convex Polygons in O(N + M)
 vector<pt> minkowski_diff(vector<pt> P, vector<pt> Q) {
     vector<pt> negQ;
@@ -642,8 +632,11 @@ vector<pt> minkowski_diff(vector<pt> P, vector<pt> Q) {
     return minkowski(P, negQ);
 }
 
-// Minimum and Maximum Distance between two Convex Polygons in O(N + M)
-// Returns a pair: {min_distance, max_distance}
+/**
+ * Computes the minimum and maximum Euclidean distances between two convex polygons in O(N + M) time.
+ * Two vectors of 2D points 'P' and 'Q' representing the convex polygons. Both MUST be ordered in strictly Counter-Clockwise (CCW) direction
+ * Returns  {min_distance, max_distance} representing the shortest and longest possible distances between any point in P and any point in Q.
+ */
 pair<T, T> convexPolygonsDistances(vector<pt> P, vector<pt> Q) {
     vector<pt> MD = minkowski_diff(P, Q);
     T max_dist = 0;
@@ -670,8 +663,11 @@ pair<T, T> convexPolygonsDistances(vector<pt> P, vector<pt> Q) {
     return {min_dist, max_dist};
 }
 
-// Finds the maximum distance between any two points in a set in O(N log N).
-// Returns a pair containing the two farthest points and their Euclidean distance.
+
+/**
+ * Calculates (the maximum distance between any two points) in O(N log N) time.
+ * Returns a pair containing a nested pair of the two farthest points, and the maximum Euclidean distance (diameter) between them: {{pt1, pt2}, distance}.
+ */
 pair<pair<pt, pt>, T> pointSetDiameter(vector<pt> pts) {
     int n = pts.size();
     if (n < 2) {
@@ -683,19 +679,20 @@ pair<pair<pt, pt>, T> pointSetDiameter(vector<pt> pts) {
     convex_hull(pts, false); 
     return convexDiameter(pts);
 }
+
 T maxDistanceInPointSet(vector<pt> pts) {
     return pointSetDiameter(pts).second;
 }
-// Returns: {min_width, max_width}
+/**
+ * Computes the minimum and maximum width of a convex polygon in O(N) time 
+ * The vertices MUST be strictly in Counter-Clockwise (CCW) order for the calipers to advance correctly.
+ */
 pair<T, T> convexPolygonWidthExtremes(const vector<pt>& poly) {
     int n = poly.size();
     if (n < 2) return {0, 0};
     if (n == 2) return {0, abs(poly[1] - poly[0])};
-
     T min_width = 1e18;
     int j = 1;
-    
-    // Find Minimum Width (Edge to opposite vertex)
     for (int i = 0; i < n; i++) {
         pt v = poly[(i + 1) % n] - poly[i];
         while (sgn(cross(v, poly[(j + 1) % n] - poly[j])) >= 0) {
@@ -704,13 +701,13 @@ pair<T, T> convexPolygonWidthExtremes(const vector<pt>& poly) {
         T current_width = cross(v, poly[j] - poly[i]) / abs(v);
         min_width = min(min_width, current_width);
     }
-    
-    // Maximum width is precisely the diameter of the polygon
     T max_width = convexDiameter(poly).second; 
-    
     return {min_width, max_width};
 }
-
+/**
+ * Calculates the minimum and maximum area of an orthogonal bounding box enclosing a convex polygon in O(N) time.
+ * Returns {min_area, max_area}
+ */
 pair<T, T> convexPolygonBoundingBoxAreaExtremes(const vector<pt>& poly) {
     int n = poly.size();
     if (n < 3) return {0, 0};
@@ -743,17 +740,18 @@ pair<T, T> convexPolygonBoundingBoxAreaExtremes(const vector<pt>& poly) {
     return {min_area, max_area};
 }
 
-// 3. MINIMUM & MAXIMUM AREA TRIANGLE
+/**
+ * Calculates the minimum and maximum area of a triangle formed by any three vertices of a convex polygon in O(N) time.
+ * Returns  {min_triangle_area, max_triangle_area}
+ */
 pair<T, T> convexPolygonTriangleAreaExtremes(const vector<pt>& poly) {
     int n = poly.size();
     if (n < 3) return {0, 0};
-    // Part 1: Minimum Area Triangle (always 3 adjacent points on a convex hull)
     T min_area = 1e18;
     for (int i = 0; i < n; i++) {
         T cur = cross(poly[(i + 1) % n] - poly[i], poly[(i + 2) % n] - poly[i]);
         min_area = min(min_area, abs(cur));
     }
-    // Part 2: Maximum Area Triangle (3-pointer Rotating Calipers)
     T max_area = 0;
     int j = 1, k = 2;
     for (int i = 0; i < n; i++) {
