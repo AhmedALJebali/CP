@@ -103,6 +103,9 @@ T segSeg(pt a, pt b, pt c, pt d) {
     return min({segPoint(a, b, c), segPoint(a, b, d),
                 segPoint(c, d, a), segPoint(c, d, b)});
 }
+bool segLineInter(pt a, pt b, line l) {
+    return sgn(l.side(a)) * sgn(l.side(b)) <= 0;
+}
 T segLineDist(pt a, pt b, line l) {
     if (segLineInter(a, b, l)) return 0;
     return min(l.dist(a), l.dist(b));
