@@ -572,16 +572,13 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
 vector<pt> get_circle(pt p1, pt p2, T r) {
     vector<pt> res;
     T d2 = sq(p1 - p2);
-    if (sgn(d2) == 0) return res; // Points are identical
-    
+    if (sgn(d2) == 0) return res; 
     T h2 = r * r - d2 / 4.0L;
-    if (sgn(h2) < 0) return res; // Points are too far apart
-    
+    if (sgn(h2) < 0) return res;
     pt mid = (p1 + p2) / 2.0L;
     pt v = p2 - p1;
     pt perp = perp_ccw(v) / abs(v);
     T h = (sgn(h2) == 0) ? 0 : sqrt(max((T)0.0, h2));
-    
     res.push_back(mid + perp * h);
     if (sgn(h2) > 0) {
         res.push_back(mid - perp * h);
