@@ -1,126 +1,111 @@
 const ld EPS = 1e-9;
 const ld PI  = acos(-1.0L);
-
 typedef ld T;
 typedef complex<T> pt;
 #define x real()
 #define y imag()
-
-// =====================
-// Basic vector helpers
-// =====================
-
 T sq(pt p) { return p.x * p.x + p.y * p.y; }
 T dot(pt a, pt b) { return a.x * b.x + a.y * b.y; }
 T cross(pt a, pt b) { return a.x * b.y - a.y * b.x; }
 pt perp_ccw(pt p) { return {-p.y, p.x}; }
-
 int sgn(T val) {
     if (val > EPS) return 1;
     if (val < -EPS) return -1;
     return 0;
 }
-
 bool samePoint(pt a, pt b) {
     return abs(a - b) <= EPS;
 }
-
-// =====================
-// Line
-// =====================
-
 struct line {
     pt v; 
     T c; // cross(v, p) = c
-
     line(pt v, T c) : v(v), c(c) {}
     line(T a, T b, T _c) : v(b, -a), c(_c) {}
     line(pt p, pt q) : v(q - p), c(cross(v, p)) {}
-
     T side(pt p) const { return cross(v, p) - c; }
     T dist(pt p) const { return abs(side(p)) / abs(v); }
     T sqDist(pt p) const { return side(p) * side(p) / sq(v); }
-
     line translate(pt t) const { return {v, c + cross(v, t)}; }
     line shiftLeft(T d) const { return {v, c + d * abs(v)}; }
-
     pt proj(pt p) const { return p - perp_ccw(v) * side(p) / sq(v); }
     pt refl(pt p) const { return p - perp_ccw(v) * (T)2.0L * side(p) / sq(v); }
 };
-
+/*
+    Finds the exact intersection point of two infinite lines.
+    Input: Two lines and a reference to store the intersection point.
+    Output: True if the lines intersect in a single point, False if they are parallel or collinear.
+*/
 bool inter(line l1, line l2, pt &out) {
     T d = cross(l1.v, l2.v);
     if (sgn(d) == 0) return false;
     out = (l2.v * l1.c - l1.v * l2.c) / d;
     return true;
 }
-
-// =====================
-// Circle
-// =====================
-
-// 0 = none, 1 = tangent, 2 = secant
+/*
+    Finds the intersection points of a circle and an infinite line.
+    Input: Circle center, radius, an infinite line, and a pair to store output points.
+    Output: Number of intersection points (0, 1, or 2).
+*/
 int circleLine(pt c, T r, line l, pair<pt, pt>& out) {
     T dis = r * r - l.sqDist(c);
     if (sgn(dis) < 0) return 0;
-
     pt p = l.proj(c);
     pt dir = l.v / abs(l.v);
     T h = (sgn(dis) == 0 ? 0 : sqrt(dis));
-
     out = {p + dir * h, p - dir * h};
     return 1 + sgn(dis);
 }
-
-// 0 = none / concentric / identical treated as 0, 1 = tangent, 2 = secant
+/*
+    Finds the intersection points of two circles.
+    Input: Centers and radii of two circles, and a pair to store the output points.
+    Output: Number of intersection points (0, 1, or 2).
+*/
 int circleCircle(pt c1, T r1, pt c2, T r2, pair<pt, pt>& out) {
     pt v = c2 - c1;
     T d = abs(v);
-
     if (sgn(r1) <= 0 || sgn(r2) <= 0) return 0;
     if (sgn(d) == 0) return 0;
     if (sgn(d - (r1 + r2)) > 0 || sgn(d - abs(r1 - r2)) < 0) return 0;
-
     T cosTheta = clamp((r1 * r1 + d * d - r2 * r2) / (2.0L * r1 * d), (T)-1.0, (T)1.0);
     T dP = r1 * cosTheta;
     pt p = c1 + (v / d) * dP;
-
     T h2 = max((T)0.0, r1 * r1 - dP * dP);
     T h = sqrt(h2);
     pt perp = perp_ccw(v) / d;
-
     out = {p + perp * h, p - perp * h};
     return (sgn(d - (r1 + r2)) == 0 || sgn(d - abs(r1 - r2)) == 0) ? 1 : 2;
 }
-
 bool onCircle(pt c, T r, pt p) {
     return sgn(abs(p - c) - r) == 0;
 }
-
+// Checks if a point lies inside or on the boundary of a circle (disk).
 bool inDisk(pt c, T r, pt p) {
     return sgn(abs(p - c) - r) <= 0;
 }
-
-// Area of overlap between two circles
+/*
+    Calculates the exact area of intersection between two circles.
+    Input: Centers and radii of two circles.
+    Output: Area of overlap.
+*/
 T circleIntersectionArea(pt c1, T r1, pt c2, T r2) {
     if (sgn(r1) <= 0 || sgn(r2) <= 0) return 0.0L;
-
     T d = abs(c2 - c1);
     if (sgn(d - (r1 + r2)) >= 0) return 0.0L;
     if (sgn(d - abs(r1 - r2)) <= 0) return PI * min(r1, r2) * min(r1, r2);
-
     T a1 = clamp((r1 * r1 + d * d - r2 * r2) / (2.0L * r1 * d), (T)-1.0, (T)1.0);
     T a2 = clamp((r2 * r2 + d * d - r1 * r1) / (2.0L * r2 * d), (T)-1.0, (T)1.0);
-
     T ang1 = 2.0L * acos(a1);
     T ang2 = 2.0L * acos(a2);
-
     T area1 = 0.5L * r1 * r1 * (ang1 - sin(ang1));
     T area2 = 0.5L * r2 * r2 * (ang2 - sin(ang2));
     return area1 + area2;
 }
 
-// Circumcenter of triangle ABC
+/*
+    Calculates the circumcenter of a triangle defined by three points.
+    Input: Three vertices of a triangle.
+    Output: The circumcenter point (returns NaN if points are collinear).
+*/
 pt circumCenter(pt a, pt b, pt c) {
     b = b - a, c = c - a;
     T d = 2.0L * cross(b, c);
@@ -136,24 +121,20 @@ pt circumCenter(pt a, pt b, pt c) {
 // Each pair in out = {touch point on first circle, touch point on second circle}
 int tangents(pt o1, T r1, pt o2, T r2, bool inner, vector<pair<pt, pt>>& out) {
     if (inner) r2 = -r2;
-
     pt d = o2 - o1;
     T dr = r1 - r2;
     T d2 = sq(d);
     T h2 = d2 - dr * dr;
-
     if (sgn(d2) == 0 || sgn(h2) < 0) return 0;
-
     T h = sqrt(max((T)0.0, h2));
-
     for (T sign : {-1.0L, 1.0L}) {
         pt v = (d * dr + perp_ccw(d) * h * sign) / d2;
         out.push_back({o1 + v * r1, o2 + v * r2});
         if (sgn(h2) == 0) break;
     }
-
     return 1 + (sgn(h2) > 0);
 }
+
 enum CircleRelation {
   IDENTICAL,          // Same circle
   DISJOINT,           // No intersection
@@ -163,7 +144,6 @@ enum CircleRelation {
   C1_INSIDE_C2,       // Circle 1 completely inside Circle 2
   C2_INSIDE_C1        // Circle 2 completely inside Circle 1
 };
-
 CircleRelation circleRelation(pt c1, ld r1, pt c2, ld r2) {
   ld d = abs(c1 - c2);
   // Same center
@@ -178,7 +158,6 @@ CircleRelation circleRelation(pt c1, ld r1, pt c2, ld r2) {
   // External tangent
   if (sgn(d - (r1 + r2)) == 0)
     return EXTERNAL_TANGENT;
-
   ld diff = fabsl(r1 - r2);
   // One circle completely inside the other
   if (sgn(d - diff) < 0)
@@ -186,21 +165,23 @@ CircleRelation circleRelation(pt c1, ld r1, pt c2, ld r2) {
   // Internal tangent
   if (sgn(d - diff) == 0)
     return INTERNAL_TANGENT;
-
   // Two intersection points
   return INTERSECT;
 }
+/*
+    Calculates the area of a circular segment given the distance from center to chord.
+    Input: Circle radius and distance from the center to the chord.
+    Output: Area of the segment.
+*/
 ld circleSegmentArea(ld r, ld d){
     return r*r*acos(d/r)-d*sqrt(r*r-d*d);
 }
-
-// ==========================================
-// --- 8. MINIMUM ENCLOSING CIRCLE ---
-// ==========================================
- 
-// Welzl's algorithm for Minimum Enclosing Circle in O(N) expected time.
-// Returns a pair: {center_point, radius}
-pair<pt, T> welzl(vector<pt> P) { // Passed by value so we can shuffle safely
+/*
+    Computes the Minimum Enclosing Circle of a set of points
+    Input: Vector of points.
+    Output: A pair containing the center point and radius of the MEC.
+*/ 
+pair<pt, T> welzl(vector<pt> P) { 
     if (P.empty()) return {pt(0, 0), 0.0L};
     if (P.size() == 1) return {P[0], 0.0L};
     mt19937 gen(1337);
@@ -228,7 +209,12 @@ pair<pt, T> welzl(vector<pt> P) { // Passed by value so we can shuffle safely
     return {c, r};
 }
 
-// Computes the exact area covered by the union of N circles in O(N^2 log N)
+/*
+    Calculates the exact area of the union of multiple circles.
+    Complexity: O(N^2 log N) time, O(N) space.
+    Input: Vector of circles represented as pairs of (center point, radius).
+    Output: Total area covered by the union of the circles.
+*/
 T circleUnionArea(const vector<pair<pt,T>>& circles_input) {
     int n = circles_input.size();
     if (n == 0) return 0.0L;
@@ -317,12 +303,12 @@ T circleUnionArea(const vector<pair<pt,T>>& circles_input) {
     }
     return total_area;
 }
-// ==========================================
-// --- 9. CIRCLE-POLYGON INTERSECTION AREA ---
-// ==========================================
 
-// Helper: Computes the signed area of the intersection between a circle
-// centered at the origin (0,0) with radius r, and a triangle formed by (0,0), a, and b.
+/*
+    Calculates the signed intersection area of a circle centered at the origin and a triangle formed by (0,0), a, and b.
+    Input: Circle radius, and two points defining the triangle with the origin.
+    Output: Signed intersection area.
+*/
 T circleTriangleIntersection(T r, pt a, pt b) {
     if (sgn(cross(a, b)) == 0) return 0.0L;
     auto sector_or_triangle = [&](pt p1, pt p2) {
@@ -356,6 +342,12 @@ T circleTriangleIntersection(T r, pt a, pt b) {
     }
     return ans;
 }
+/*
+    Calculates the intersection area of a circle and a simple polygon.
+    Input: Circle center, radius, and polygon vertices.
+        - Direction: CW or CCW.
+    Output: Intersection area.
+*/
 T circlePolygonArea(pt c, T r, const vector<pt>& poly) {
     T area = 0.0L;
     int n = poly.size();
@@ -366,7 +358,12 @@ T circlePolygonArea(pt c, T r, const vector<pt>& poly) {
     }
     return abs(area);
 }
-// Ray-casting algorithm to check if a point is strictly inside a polygon
+/*
+    Checks if a point is strictly inside a simple polygon using ray-casting.
+    Input: Point to test and the polygon's vertices.
+        - Direction: CW or CCW.
+    Output: True if the point is inside, False otherwise.
+*/
 bool pointInPolygon(pt p, const vector<pt>& poly) {
     bool inside = false;
     int n = poly.size();
@@ -374,10 +371,7 @@ bool pointInPolygon(pt p, const vector<pt>& poly) {
         pt a = poly[i];
         pt b = poly[j];
         if (a.y > b.y) swap(a, b);
-
-        // If the point's Y is within the edge's Y range
         if (p.y > a.y && p.y <= b.y) {
-            // Find the X coordinate of the intersection
             T x_intersect = a.x + (p.y - a.y) * (b.x - a.x) / (b.y - a.y);
             if (x_intersect > p.x) {
                 inside = !inside;
@@ -386,6 +380,11 @@ bool pointInPolygon(pt p, const vector<pt>& poly) {
     }
     return inside;
 }
+/*
+    Finds intersection points between an  line and a circle.
+    Input: Circle center, radius, and two distinct points defining the line.
+    Output: Vector of valid intersection points (up to 2).
+*/
 vector<pt> getLineCircleIntersections(pt C, T R, pt A, pt B) {
     vector<pt> res;
     pt V = B - A;
@@ -407,7 +406,11 @@ vector<pt> getLineCircleIntersections(pt C, T R, pt A, pt B) {
     }
     return res;
 }
-// Intersect a circle (Center C, radius R) with a line segment (A to B)
+/*
+    Finds intersection points between a segment and a circle.
+    Input: Circle center, radius, and two endpoints of the line segment.
+    Output: Vector of valid intersection points (0 to 2 points).
+*/
 vector<pt> getSegmentCircleIntersections(pt C, T R, pt A, pt B) {
     vector<pt> res;
     pt V = B - A;
@@ -428,8 +431,13 @@ vector<pt> getSegmentCircleIntersections(pt C, T R, pt A, pt B) {
     return res;
 }
 
-
-T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vector<pt>& poly) {
+/*
+    Calculates the total perimeter of a union of circles strictly inside a simple polygon.
+    Input: Vector of circles (center, radius) and a bounding simple polygon.
+        - Direction: Polygon vertices must be CW or CCW.
+    Output: Total exposed circular perimeter inside the polygon.
+*/
+T circleUnionPerimeterInPolygon(const vector<pair<pt, T>>& circles_input, const vector<pt>& poly) {
     int n = circles_input.size();
     if (n == 0 || poly.size() < 3) return 0.0L;
     vector<pair<pt, T>> circles;
@@ -453,17 +461,12 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
             }
         }
     }
-
     T total_perimeter = 0.0L;
-
     for (int i = 0; i < n; ++i) {
         if (covered[i]) continue;
-
         vector<pair<T, T>> intervals;
         pt center = circles[i].first;
         T R = circles[i].second;
-
-        // Helper function to safely wrap and add intervals
         auto add_interval = [&](T left, T right) {
             if (right - left >= 2.0L * PI - 1e-11) {
                 intervals.push_back({-PI, PI});
@@ -479,28 +482,19 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
                 intervals.push_back({left, right});
             }
         };
-
-        // 2. Add covered intervals from OTHER CIRCLES
         for (int j = 0; j < n; ++j) {
             if (i == j || covered[j]) continue;
             T d = abs(circles[i].first - circles[j].first);
-
             if (sgn(d - (R + circles[j].second)) >= 0) continue;
             if (sgn(d - abs(R - circles[j].second)) <= 0) continue;
-
             T phi = arg(circles[j].first - circles[i].first);
             T cosTheta = (R * R + d * d - circles[j].second * circles[j].second) / (2.0L * R * d);
             cosTheta = clamp(cosTheta, (T)-1.0, (T)1.0);
             T theta = acos(cosTheta);
-
             add_interval(phi - theta, phi + theta);
         }
-
-        // 3. Add covered intervals from the POLYGON BOUNDARIES
-        vector<T> poly_angles = {-PI, PI}; // Start with base circle wrap angles
+        vector<T> poly_angles = {-PI, PI}; 
         int p_sz = poly.size();
-
-        // Find all intersection points with the polygon
         for (int k = 0; k < p_sz; ++k) {
             pt A = poly[k];
             pt B = poly[(k + 1) % p_sz];
@@ -509,21 +503,17 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
                 poly_angles.push_back(arg(p - center));
             }
         }
-        // Sort the boundary angles to process arcs sequentially
         sort(poly_angles.begin(), poly_angles.end());
-        // Check the midpoint of each resulting arc
         for (size_t k = 0; k < poly_angles.size() - 1; ++k) {
             T left = poly_angles[k];
             T right = poly_angles[k+1];
             if (right - left < 1e-9) continue;
             T mid_angle = (left + right) / 2.0L;
             pt test_point = center + polar(R, mid_angle);
-            // If the midpoint of this arc is OUTSIDE the polygon, this arc is exposed/covered
             if (!pointInPolygon(test_point, poly)) {
                 add_interval(left, right);
             }
         }
-        // 4. Sort and Merge all intervals
         sort(intervals.begin(), intervals.end());
         vector<pair<T, T>> merged;
         if (!intervals.empty()) {
@@ -540,8 +530,6 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
             }
             merged.push_back({cur_left, cur_right});
         }
-
-        // 5. Calculate uncovered Arc Length (Perimeter)
         T prev = -PI;
         T exposed_angle = 0.0L;
         for (const auto& p : merged) {
@@ -563,12 +551,11 @@ T getPolygonWindowsPerimeter(const vector<pair<pt, T>>& circles_input, const vec
     return total_perimeter;
 }
 
-// ==========================================
-// --- CONSTRUCT CIRCLES THROUGH CONSTRAINTS ---
-// ==========================================
-
-// 1. Circle(s) of given radius passing through two points
-// Returns the center(s) of such circles (0, 1, or 2 centers)
+/*
+    Finds centers of circles with a given radius passing through two points.
+    Input: Two points on the circle boundary and the radius.
+    Output: Vector of valid circle centers (up to 2).
+*/
 vector<pt> get_circle(pt p1, pt p2, T r) {
     vector<pt> res;
     T d2 = sq(p1 - p2);
@@ -586,25 +573,21 @@ vector<pt> get_circle(pt p1, pt p2, T r) {
     return res;
 }
 
-// 2. Circle(s) of given radius tangent to a line and passing through a point
-// Returns the center(s) of such circles (up to 4 centers)
-vector<pt> get_circle(line l, pt p, T r) {
+/*
+    Finds centers of circles with a given radius tangent to a line and passing through a point.
+    Input: Tangent line, point on the circle, and radius.
+    Output: Vector of valid circle centers.
+*/vector<pt> get_circle(line l, pt p, T r) {
     vector<pt> res;
-    // The center must lie on a line parallel to 'l' at distance 'r'
     line l1 = l.shiftLeft(r);
     line l2 = l.shiftLeft(-r);
-    
-    // The center must also be at distance 'r' from 'p' (lie on circle centered at p)
     pair<pt, pt> out;
     int pts1 = circleLine(p, r, l1, out);
     if (pts1 >= 1) res.push_back(out.first);
     if (pts1 == 2) res.push_back(out.second);
-    
     int pts2 = circleLine(p, r, l2, out);
     if (pts2 >= 1) res.push_back(out.first);
     if (pts2 == 2) res.push_back(out.second);
-    
-    // Deduplicate in case of tangent overlaps or r == 0
     vector<pt> unique_res;
     for (pt c : res) {
         bool dup = false;
@@ -616,15 +599,17 @@ vector<pt> get_circle(line l, pt p, T r) {
     return unique_res;
 }
 
-// Calculates the area of the circular segment formed by the chord connecting two points (p1, p2) on the circle's boundary.
+/*
+    Calculates the area of the minor circular segment formed by a chord.
+    Input: Circle center, radius, and two points on the boundary.
+    Output: Area of the minor segment.
+*/
 T circleChordArea(pt c, T r, pt p1, pt p2) {
-    if (r <= EPS) return 0; // Guard against r = 0
+    if (r <= EPS) return 0; 
     pt v1 = p1 - c;
     pt v2 = p2 - c;
-    // Use absolute value of cross product to always get the positive minor angle [0, PI]
     T cross_p = abs(cross(v1, v2)); 
     T dot_p = dot(v1, v2);
-    // atan2(y, x) is numerically stable and requires no clamping
     T theta = atan2(cross_p, dot_p);
     return T(0.5) * r * r * (theta - sin(theta));
 }
