@@ -1,54 +1,33 @@
 const ld EPS = 1e-9;
 const ld PI  = acos(-1.0L);
-
 typedef ld T;
 typedef complex<T> pt;
 #define x real()
 #define y imag()
-
-// =====================
-// Basic vector helpers
-// =====================
-
 T sq(pt p) { return p.x * p.x + p.y * p.y; }
 T dot(pt a, pt b) { return a.x * b.x + a.y * b.y; }
 T cross(pt a, pt b) { return a.x * b.y - a.y * b.x; }
 pt perp_ccw(pt p) { return {-p.y, p.x}; }
-
 int sgn(T val) {
     if (val > EPS) return 1;
     if (val < -EPS) return -1;
     return 0;
 }
-
 bool samePoint(pt a, pt b) {
     return abs(a - b) <= EPS;
 }
-
-// =====================
-// Minimal line helpers
-// =====================
-
 struct line {
     pt v;
-    T c; // cross(v, p) = c
-
+    T c; 
     line(pt p, pt q) : v(q - p), c(cross(v, p)) {}
-
     T side(pt p) const { return cross(v, p) - c; }
 };
-
 bool inter(line l1, line l2, pt &out) {
     T d = cross(l1.v, l2.v);
     if (sgn(d) == 0) return false;
     out = (l2.v * l1.c - l1.v * l2.c) / d;
     return true;
 }
-
-// =====================
-// Polygon area / perimeter
-// =====================
-
 T signedAreaPolygon(const vector<pt>& p) {
     int n = (int)p.size();
     T area = 0;
@@ -57,11 +36,9 @@ T signedAreaPolygon(const vector<pt>& p) {
     }
     return area / 2.0L;
 }
-
 T areaPolygon(const vector<pt>& p) {
     return fabsl(signedAreaPolygon(p));
 }
-
 T perimeterPolygon(const vector<pt>& p) {
     int n = (int)p.size();
     if (n < 2) return 0;
@@ -71,15 +48,9 @@ T perimeterPolygon(const vector<pt>& p) {
     }
     return per;
 }
-
-// =====================
-// Polygon orientation / convexity
-// =====================
-
 bool isCCW(const vector<pt>& p) {
     return sgn(signedAreaPolygon(p)) > 0;
 }
-
 bool isConvex(const vector<pt>& p) {
     int n = (int)p.size();
     if (n < 3) return false;
@@ -94,27 +65,18 @@ bool isConvex(const vector<pt>& p) {
     }
     return true;
 }
-
-// =====================
-// Point on segment / polygon
-// =====================
-
 bool inDisk(pt a, pt b, pt p) {
     return sgn(dot(a - p, b - p)) <= 0;
 }
-
 bool onSegment(pt a, pt b, pt p) {
     return sgn(cross(b - a, p - a)) == 0 && inDisk(a, b, p);
 }
-
 bool above(pt a, pt p) {
     return p.y >= a.y;
 }
-
 bool crossesRay(pt a, pt p, pt q) {
     return (above(a, q) - above(a, p)) * sgn(cross(p - a, q - a)) > 0;
 }
-
 // strict = true  -> boundary is outside
 // strict = false -> boundary is inside
 bool inPolygon(const vector<pt>& p, pt a, bool strict = true) {
