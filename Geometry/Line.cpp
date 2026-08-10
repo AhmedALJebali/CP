@@ -3,30 +3,18 @@ typedef ld T;
 typedef complex<T> pt;
 #define x real()
 #define y imag()
-
-// ======================
-// Basic math
-// ======================
-
 T sq(pt p) { return p.x * p.x + p.y * p.y; }
 T dot(pt v, pt w) { return v.x * w.x + v.y * w.y; }
 T cross(pt v, pt w) { return v.x * w.y - v.y * w.x; }
 pt perp_ccw(pt p) { return {-p.y, p.x}; }
-
 int sgn(T val) {
     if (val > EPS) return 1;
     if (val < -EPS) return -1;
     return 0;
 }
-
 bool samePoint(pt a, pt b) {
     return abs(a - b) <= EPS;
 }
-
-// ======================
-// Line
-// ======================
-
 struct line {
     pt v; T c;
     line(pt v, T c) : v(v), c(c) {} // From direction vector v and offset c
@@ -42,7 +30,6 @@ struct line {
     pt proj(pt p) { return p - perp_ccw(v) * side(p) / sq(v); } // Drop perpendicular
     pt refl(pt p) { return p - perp_ccw(v) * (T)2.0 * side(p) / sq(v); } // Reflect point
 };
-
 bool inter(line l1, line l2, pt &out) {
     T d = cross(l1.v, l2.v);
     if (sgn(d) == 0) return false;
@@ -63,58 +50,42 @@ pt shortestPathPointOnLine(pt a, pt b, line l) {
     }
     pt out; inter(line(l.refl(a), b), l, out); return out; // Same side, reflect and connect
 }
-
-
-
-// ======================
-// Segment helpers
-// ======================
-
 bool inDisk(pt a, pt b, pt p) {
     return sgn(dot(a - p, b - p)) <= 0;
 }
-
 bool onSegment(pt a, pt b, pt p) {
     return sgn(cross(b - a, p - a)) == 0 && inDisk(a, b, p);
 }
-
 // Strictly inside both segments
 bool properInter(pt a, pt b, pt c, pt d, pt &out) {
     T oa = cross(d - c, a - c);
     T ob = cross(d - c, b - c);
     T oc = cross(b - a, c - a);
     T od = cross(b - a, d - a);
-
     if (sgn(oa) * sgn(ob) < 0 && sgn(oc) * sgn(od) < 0) {
         out = (a * ob - b * oa) / (ob - oa);
         return true;
     }
     return false;
 }
-
 // All intersection points of two segments (0/1/2 points)
 vector<pt> segInter(pt a, pt b, pt c, pt d) {
     vector<pt> res;
     pt out;
-
     auto add = [&](pt p) {
         for (auto &q : res) if (samePoint(p, q)) return;
         res.push_back(p);
     };
-
     if (properInter(a, b, c, d, out)) {
         add(out);
         return res;
     }
-
     if (onSegment(c, d, a)) add(a);
     if (onSegment(c, d, b)) add(b);
     if (onSegment(a, b, c)) add(c);
     if (onSegment(a, b, d)) add(d);
-
     return res;
 }
-
 pt closestPointOnSegment(pt a, pt b, pt p) {
     if (sgn(abs(b - a)) == 0) return a; // degenerate segment
     pt ab = b - a;
@@ -123,11 +94,9 @@ pt closestPointOnSegment(pt a, pt b, pt p) {
     if (sgn(t - 1) >= 0) return b;
     return a + ab * t;
 }
-
 T segPoint(pt a, pt b, pt p) {
     return abs(p - closestPointOnSegment(a, b, p));
 }
-
 T segSeg(pt a, pt b, pt c, pt d) {
     pt dummy;
     if (properInter(a, b, c, d, dummy)) return 0;
@@ -138,109 +107,74 @@ T segLineDist(pt a, pt b, line l) {
     if (segLineInter(a, b, l)) return 0;
     return min(l.dist(a), l.dist(b));
 }
-
-// ======================
-// Ray helpers
-// ======================
-
 bool onRay(pt a, pt b, pt p) {
     return sgn(cross(b - a, p - a)) == 0 && sgn(dot(p - a, b - a)) >= 0;
 }
-
 // Ray AB intersects line l?
 bool rayLineInter(pt a, pt b, line l) {
     line r(a, b);
     pt out;
-
     if (inter(r, l, out)) {
         return sgn(dot(out - a, b - a)) >= 0;
     }
-
-    // Parallel case: intersection exists only if collinear
     return sgn(l.side(a)) == 0;
 }
-
 T rayLine(pt a, pt b, line l) {
     if (rayLineInter(a, b, l)) return 0;
     return l.dist(a);
 }
-
 // One common point of two rays if they intersect.
 // For collinear overlapping rays, returns one valid common endpoint.
 bool rayInter(pt a, pt b, pt c, pt d, pt &p) {
     line l1(a, b), l2(c, d);
-
     if (inter(l1, l2, p)) {
         return onRay(a, b, p) && onRay(c, d, p);
     }
-
     if (sgn(l1.side(c)) != 0) return false; // parallel but not collinear
-
     if (onRay(a, b, c)) { p = c; return true; }
     if (onRay(c, d, a)) { p = a; return true; }
-
     return false;
 }
-
 T rayDist(pt a, pt b, pt p) {
     line l(a, b);
     if (sgn(dot(p - a, b - a)) >= 0) return l.dist(p);
     return abs(p - a);
 }
-
 T rayRayDist(pt a1, pt b1, pt a2, pt b2) {
     pt p;
     if (rayInter(a1, b1, a2, b2, p)) return 0;
     return min(rayDist(a1, b1, a2), rayDist(a2, b2, a1));
 }
-
-// ==========================================
-// . 1D SEGMENT UNION (SWEEP LINE)
-// ==========================================
 T segmentUnionLength(vector<pair<T, T>>& segments) {
     if (segments.empty()) return 0.0L;
-
     struct Event {
         T pos;
         int type;
-
         bool operator<(const Event& o) const {
             if (sgn(pos - o.pos) != 0) return pos < o.pos;
             return type > o.type; 
         }
     };
-
     vector<Event> events;
     events.reserve(segments.size() * 2);
-
     for (const auto& seg : segments) {
         T l = min(seg.first, seg.second);
         T r = max(seg.first, seg.second);
         if (sgn(r - l) == 0) continue;
-
         events.push_back({l, 1});
         events.push_back({r, -1});
     }
-
     sort(events.begin(), events.end());
-
     T total_length = 0.0L;
     int active_segments = 0;
-
     for (size_t i = 0; i < events.size(); i++) {
         if (i > 0 && active_segments > 0) {
             total_length += events[i].pos - events[i - 1].pos;
         }
         active_segments += events[i].type;
     }
-
     return total_length;
 }
-
-// ==========================================
-// --- O(N log N) SEGMENT INTERSECTION ---
-// ==========================================
-
 // Quick boolean check if two segments intersect
 // Much faster than segInter() when we only need a yes/no answer.
 bool doIntersect(pt a, pt b, pt c, pt d) {
@@ -256,7 +190,6 @@ bool doIntersect(pt a, pt b, pt c, pt d) {
 pair<int, int> anyIntersection(vector<pair<pt, pt>> segs) {
     int n = segs.size();
     if (n < 2) return {-1, -1};
-
     // TRICK: Rotate all segments by an arbitrary angle.
     // This perfectly eliminates the "Vertical Line" edge case which usually
     // breaks Sweep Line algorithms, while preserving all valid intersections.
