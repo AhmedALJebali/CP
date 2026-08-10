@@ -440,15 +440,17 @@ bool get_direction(vector<pt> &p) {
     if (sgn(ans) > 0) return 1;
     return 0;
 }
-// -1 if strictly inside, 0 if on the polygon, 1 if strictly outside
+/*
+    Checks if a point is strictly inside, on the boundary, or strictly outside a polygon.
+    Input: A polygon represented by a vector of vertices (p) and a point (z).
+    Output:
+       -1 if strictly INSIDE the polygon.
+        0 if ON the polygon boundary.
+        1 if strictly OUTSIDE the polygon.
+*/
 int is_point_in_polygon(const vector<pt> &p, const pt& z) { // O(n)
     int k = windingNumber(p, z);
     if (k == -1) return 0;   
     if (k == 0) return 1;   
     return -1;             
 }
-
-
-
-
-
