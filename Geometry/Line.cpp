@@ -44,11 +44,11 @@ line bisector(line l1, line l2, bool interior) {
 }
 // Heron's shortest path: point on line l minimizing distance to A + distance to B
 pt shortestPathPointOnLine(pt a, pt b, line l) {
-    if (sgn(l.side(a)) == 0 && sgn(l.side(b)) == 0) return a; // Both on line: any point works, return A
-    if (sgn(l.side(a)) * sgn(l.side(b)) < 0) { // Opposite sides, direct connect
+    if (sgn(l.side(a)) == 0 && sgn(l.side(b)) == 0) return a; 
+    if (sgn(l.side(a)) * sgn(l.side(b)) < 0) {
         pt out; inter(line(a, b), l, out); return out;
     }
-    pt out; inter(line(l.refl(a), b), l, out); return out; // Same side, reflect and connect
+    pt out; inter(line(l.refl(a), b), l, out); return out; 
 }
 bool inDisk(pt a, pt b, pt p) {
     return sgn(dot(a - p, b - p)) <= 0;
@@ -87,7 +87,7 @@ vector<pt> segInter(pt a, pt b, pt c, pt d) {
     return res;
 }
 pt closestPointOnSegment(pt a, pt b, pt p) {
-    if (sgn(abs(b - a)) == 0) return a; // degenerate segment
+    if (sgn(abs(b - a)) == 0) return a; 
     pt ab = b - a;
     T t = dot(p - a, ab) / sq(ab);
     if (sgn(t) <= 0) return a;
@@ -133,7 +133,7 @@ bool rayInter(pt a, pt b, pt c, pt d, pt &p) {
     if (inter(l1, l2, p)) {
         return onRay(a, b, p) && onRay(c, d, p);
     }
-    if (sgn(l1.side(c)) != 0) return false; // parallel but not collinear
+    if (sgn(l1.side(c)) != 0) return false; 
     if (onRay(a, b, c)) { p = c; return true; }
     if (onRay(c, d, a)) { p = a; return true; }
     return false;
@@ -196,7 +196,7 @@ pair<int, int> anyIntersection(vector<pair<pt, pt>> segs) {
     // TRICK: Rotate all segments by an arbitrary angle.
     // This perfectly eliminates the "Vertical Line" edge case which usually
     // breaks Sweep Line algorithms, while preserving all valid intersections.
-    T ang = 1.00123456789; // Arbitrary angle in radians
+    T ang = 1.00123456789; 
     pt rot(cos(ang), sin(ang));
     
     for (int i = 0; i < n; i++) {
