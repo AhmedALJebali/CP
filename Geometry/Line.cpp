@@ -193,86 +193,61 @@ bool doIntersect(pt a, pt b, pt c, pt d) {
 pair<int, int> anyIntersection(vector<pair<pt, pt>> segs) {
     int n = segs.size();
     if (n < 2) return {-1, -1};
-    // TRICK: Rotate all segments by an arbitrary angle.
-    // This perfectly eliminates the "Vertical Line" edge case which usually
-    // breaks Sweep Line algorithms, while preserving all valid intersections.
     T ang = 1.00123456789; 
     pt rot(cos(ang), sin(ang));
-    
     for (int i = 0; i < n; i++) {
         segs[i].first *= rot;
         segs[i].second *= rot;
-        // Guarantee left endpoint strictly comes before right endpoint
         if (sgn(segs[i].first.x - segs[i].second.x) > 0 || 
            (sgn(segs[i].first.x - segs[i].second.x) == 0 && sgn(segs[i].first.y - segs[i].second.y) > 0)) {
             swap(segs[i].first, segs[i].second);
         }
     }
-
     struct Event {
         T pos; int type, id;
         bool operator<(const Event& o) const {
             if (sgn(pos - o.pos) != 0) return pos < o.pos;
-            return type > o.type; // Left endpoints (+1) processed before right (-1)
+            return type > o.type; 
         }
     };
-
     vector<Event> events;
     for (int i = 0; i < n; i++) {
         events.push_back({segs[i].first.x, 1, i});
         events.push_back({segs[i].second.x, -1, i});
     }
     sort(events.begin(), events.end());
-
-    T sweep_x = 0; // Tracks the current X of the sweep line
-    
-    // Evaluates the Y coordinate of segment 'id' at the current sweep_x
+    T sweep_x = 0;
     auto evalY = [&](int id) {
         pt p = segs[id].first;
         pt q = segs[id].second;
-        if (sgn(p.x - q.x) == 0) return p.y; // Safety fallback
+        if (sgn(p.x - q.x) == 0) return p.y; 
         return p.y + (q.y - p.y) * (sweep_x - p.x) / (q.x - p.x);
     };
-
-    // Dynamic Comparator for the active set
     auto cmp = [&](int a, int b) {
         if (a == b) return false;
         T y1 = evalY(a), y2 = evalY(b);
         if (sgn(y1 - y2) != 0) return y1 < y2;
-        return a < b; // Fallback to segment ID
+        return a < b; 
     };
-
     set<int, decltype(cmp)> active(cmp);
     vector<set<int, decltype(cmp)>::iterator> its(n);
-
     auto check = [&](int i, int j) {
         return doIntersect(segs[i].first, segs[i].second, segs[j].first, segs[j].second);
     };
-
     for (auto e : events) {
-        sweep_x = e.pos; // Must update global sweep_x before any Set operations
-        
-        if (e.type == 1) { // Left Endpoint (Insert Segment)
+        sweep_x = e.pos; 
+        if (e.type == 1) { 
             auto it = active.insert(e.id).first;
             its[e.id] = it;
-            
             auto nxt = next(it);
             auto prv = (it == active.begin() ? active.end() : prev(it));
-            
-            // Check intersection with neighbor strictly ABOVE
             if (nxt != active.end() && check(*it, *nxt)) return {*it, *nxt};
-            
-            // Check intersection with neighbor strictly BELOW
             if (prv != active.end() && check(*it, *prv)) return {*it, *prv};
-            
-        } else { // Right Endpoint (Remove Segment)
+        } else { 
             auto it = its[e.id];
             auto nxt = next(it);
             auto prv = (it == active.begin() ? active.end() : prev(it));
-            
-            // Before removing, check if the two neighbors (above and below) intersect
             if (nxt != active.end() && prv != active.end() && check(*prv, *nxt)) return {*prv, *nxt};
-            
             active.erase(it);
         }
     }
