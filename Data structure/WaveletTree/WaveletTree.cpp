@@ -114,6 +114,23 @@ private:
         }
         return -1;
     }
+    void get_frequent_helper(int node, int L, int R, int threshold, vector<int>& res) const {
+        if (node == -1 || L > R) return;
+        if (tree[node].lo == tree[node].hi) {
+            if (R - L + 1 >= threshold) {
+                res.push_back(tree[node].lo);
+            }
+            return;
+        }
+        int in_left = tree[node].b[R] - tree[node].b[L - 1];
+        int in_right = (R - L + 1) - in_left;
+        if (in_left >= threshold) {
+            get_frequent_helper(tree[node].l, tree[node].b[L - 1] + 1, tree[node].b[R], threshold, res);
+        }
+        if (in_right >= threshold) {
+            get_frequent_helper(tree[node].r, L - tree[node].b[L - 1], R - tree[node].b[R], threshold, res);
+        }
+    }
 
 public:
     WaveletTree() : root(-1) {}
@@ -156,5 +173,10 @@ public:
                sum_k_smallest(root, L, R, count_strictly_less(L, R, X));
     }
 
-    int get_majority(int L, int R) const { return majority(root, L, R, (R - L + 1) / 2); }
+    int get_majority(int L, int R,int x) const { return majority(root, L, R, x); }
+    vector<int> get_all_frequent(int L, int R, int threshold) const {
+        vector<int> res;
+        get_frequent_helper(root, L, R, threshold, res);
+        return res;
+    }
 };
