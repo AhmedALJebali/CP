@@ -5,52 +5,40 @@ private:
         int l, r;
         vector<int> b;
         vector<int> sum_l;
-
         Node() : lo(0), hi(0), l(-1), r(-1) {}
     };
-
     vector<Node> tree;
     int root;
-
     int build(int* from, int* to, int x, int y) {
         if (from >= to || x > y) return -1;
-
         int node_idx = tree.size();
         tree.emplace_back();
         tree[node_idx].lo = x;
         tree[node_idx].hi = y;
-
         if (x == y) return node_idx;
-
         int mid = x + (y - x) / 2;
         auto f = [mid](int c) { return c <= mid; };
-
         int n = to - from;
         tree[node_idx].b.assign(n + 1, 0);
         tree[node_idx].sum_l.assign(n + 1, 0);
-
         for (int i = 0; i < n; ++i) {
             bool goes_left = f(from[i]);
             tree[node_idx].b[i + 1] = tree[node_idx].b[i] + goes_left;
             tree[node_idx].sum_l[i + 1] = tree[node_idx].sum_l[i] + (goes_left ? from[i] : 0);
         }
-
         auto pivot = stable_partition(from, to, f);
-
         if (from != pivot) {
             tree[node_idx].l = build(from, pivot, x, mid);
         }
         if (pivot != to) {
             tree[node_idx].r = build(pivot, to, mid + 1, y);
         }
-
         return node_idx;
     }
 
     int kth(int node, int L, int R, int k) const {
         if (node == -1 || L > R) return -1;
         if (tree[node].lo == tree[node].hi) return tree[node].lo;
-
         int in_left = tree[node].b[R] - tree[node].b[L - 1];
         if (k <= in_left) {
             return kth(tree[node].l, tree[node].b[L - 1] + 1, tree[node].b[R], k);
@@ -63,10 +51,8 @@ private:
         if (node == -1 || L > R || X <= tree[node].lo) return 0;
         if (tree[node].hi < X) return R - L + 1;
         if (tree[node].lo == tree[node].hi) return 0;
-
         int mid = tree[node].lo + (tree[node].hi - tree[node].lo) / 2;
         int in_left = tree[node].b[R] - tree[node].b[L - 1];
-
         if (X <= mid) {
             return count_less(tree[node].l, tree[node].b[L - 1] + 1, tree[node].b[R], X);
         } else {
@@ -77,7 +63,6 @@ private:
     int count_val(int node, int L, int R, int X) const {
         if (node == -1 || L > R || X < tree[node].lo || X > tree[node].hi) return 0;
         if (tree[node].lo == tree[node].hi) return R - L + 1;
-
         int mid = tree[node].lo + (tree[node].hi - tree[node].lo) / 2;
         if (X <= mid) {
             return count_val(tree[node].l, tree[node].b[L - 1] + 1, tree[node].b[R], X);
@@ -89,7 +74,6 @@ private:
     int sum_k_smallest(int node, int L, int R, int k) const {
         if (node == -1 || L > R || k <= 0) return 0;
         if (tree[node].lo == tree[node].hi) return 1LL * tree[node].lo * k;
-
         int in_left = tree[node].b[R] - tree[node].b[L - 1];
         if (k <= in_left) {
             return sum_k_smallest(tree[node].l, tree[node].b[L - 1] + 1, tree[node].b[R], k);
@@ -167,12 +151,10 @@ public:
         int total = R - L + 1;
         return sum_k_smallest(root, L, R, total) - sum_k_smallest(root, L, R, total - k);
     }
-
     int sum_between_values(int L, int R, int X, int Y) const {
         return sum_k_smallest(root, L, R, count_strictly_less(L, R, Y + 1)) -
                sum_k_smallest(root, L, R, count_strictly_less(L, R, X));
     }
-
     int get_majority(int L, int R,int x) const { return majority(root, L, R, x); }
     vector<int> get_all_frequent(int L, int R, int threshold) const {
         vector<int> res;
