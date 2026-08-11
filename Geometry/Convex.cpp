@@ -5,10 +5,6 @@ typedef ld T;
 typedef complex<T> pt;
 #define x real()
 #define y imag()
-
-// ==========================================
-// --- 1. BASIC OPERATIONS ---
-// ==========================================
 T sq(pt p) { return p.x * p.x + p.y * p.y; }
 T dot(pt v, pt w) { return v.x * w.x + v.y * w.y; } 
 T cross(pt v, pt w) { return v.x * w.y - v.y * w.x; } 
@@ -16,15 +12,10 @@ int sgn(T val) { if(val > EPS) return 1; if(val < -EPS) return -1; return 0; }
 bool same(pt a, pt b) { return abs(a - b) <= EPS; }
 T dist2(pt a, pt b) { return norm(a - b); }
 pt perp_ccw(pt p) { return {-p.y, p.x}; }
-
-// ==========================================
-// --- 2. ANGLES & ORIENTATION ---
-// ==========================================
 T toDegrees(T rad) { return rad * (180.0L / PI); }
 T toRadians(T deg) { return deg * (PI / 180.0L); }
 T orient(pt a, pt b, pt c) { return cross(b - a, c - a); } 
 T angle(pt v, pt w) { return acos(clamp(dot(v, w) / abs(v) / abs(w), (T)-1.0, (T)1.0)); }
-
 T orientedAngle(pt a, pt b, pt c) {
   if (orient(a,b,c) >= 0)
     return angle(b-a, c-a);
@@ -70,10 +61,8 @@ T signedAreaPolygon(const vector<pt>& p) {
  */
 T areaPolygon(const vector<pt>& p) { return fabsl(signedAreaPolygon(p)); }
 
-/**
- * Calculates the total perimeter (sum of edge lengths) of a polygon.
- * Works for any simple polygon (convex or concave) as long as the vertices are provided in cyclic order.
- */
+// Returns the perimeter of the closed polygon defined 
+// CW or CCW — both are accepted
 T perimeterPolygon(const vector<pt>& p) {
     int n = p.size(); if (n < 2) return 0;
     T per = 0;
@@ -81,10 +70,10 @@ T perimeterPolygon(const vector<pt>& p) {
     return per;
 }
 /**
- * Determines whether a given polygon is convex.
- * Useful for validating polygon shapes before applying algorithms that require convexity, like Minkowski sums.
- * A constant reference to a vector of 2D points 'p' representing a polygon in cyclic order, and an optional 'strict' flag.
- * Returns true if the polygon is convex (respecting the strict flag for collinear edges), and false if it is concave or has fewer than 3 vertices.
+ * Checks whether p is a convex polygon.
+ * Input: vertices in cyclic boundary order (CW or CCW).
+ * strict=false allows collinear consecutive edges; strict=true rejects them.
+ * Output: true if convex, false otherwise or if n < 3.
  */
 bool isConvex(const vector<pt>& p, bool strict = false) {
     int n = p.size(); if (n < 3) return false;
@@ -102,19 +91,20 @@ bool isConvex(const vector<pt>& p, bool strict = false) {
     return true;
 }
 /**
- * Ensures the vertices of a polygon are ordered strictly counter-clockwise (CCW).
- * takes A reference to a vector of 2D points 'p' representing a polygon. The vertices must be in cyclic order, but can be either CW or CCW.
- * Modifies the input vector in-place. If the points were in CW order , it reverses them to become CCW.
+ * Ensures polygon vertices are ordered CCW.
+ * Input: vertices in cyclic order, either CW or CCW.
+ * Output: p modified in-place to CCW order.
+ * Degenerate polygons (zero signed area) are unchanged.
  */
 void normalizeCCW(vector<pt>& p) {
     if (sgn(signedAreaPolygon(p)) < 0) reverse(p.begin(), p.end());
 }
 
 /**
- * Cyclically shifts the vertices of a polygon so the bottom-leftmost point becomes the first element.
- * Useful for standardizing polygons before operations like Minkowski addition or polygon equality checks.
- * A reference to a vector of 2D points 'p' representing a polygon in cyclic order.
- * Modifies the input vector in-place. The relative order of the vertices (CW or CCW) remains unchanged, but the starting point (p[0]) is rotated.
+ * Rotates polygon so the bottom-leftmost vertex is p[0].
+ * Input: vertices in cyclic order (CW or CCW).
+ * Output: same vertices/order, rotated so minimum (y, then x) is first.
+ * Direction is preserved; convexity is not required.
  */
 void reorderConvex(vector<pt>& p) {
     int pos = 0;
@@ -131,9 +121,11 @@ bool cw(pt a, pt b, pt c, bool col) {
     return o < 0 || (col && o == 0);
 }
 /**
- * Computes the convex hull of a set of 2D points in O(N log N) time using Graham Scan.
- * take A reference to an UNORDERED vector of 2D points ('a') representing a point cloud, and a boolean flag ('include_collinear') to keep points flat on the edges.
- * Modifies the input vector 'a' in-place to contain only the convex hull vertices, ordered in CLOCKWISE (CW) direction.
+ * Computes the convex hull in O(N log N).
+ * Input: unordered point set; CW or CCW input is allowed.
+ * Output: hull vertices in CW order, stored in `a`.
+ * include_collinear=true keeps points lying on hull edges.
+ * include_collinear=false keeps only extreme hull vertices.
  */
 void convex_hull(vector<pt>& a, bool include_collinear = true) {
     pt p0 = *min_element(a.begin(), a.end(), [](pt a, pt b) {
@@ -166,10 +158,11 @@ void convex_hull(vector<pt>& a, bool include_collinear = true) {
     a = st;
 }
 
- /**
- * Determines if a given point 'q' is strictly or non-strictly inside a convex polygon.
- * Runs in O(log N) time using binary search.
- */
+// Point-in-convex-polygon test in O(log N).
+// Input: convex polygon vertices in cyclic order (CW or CCW), and point q.
+// Output: true if q is inside; if strict=false, boundary is also accepted.
+// Requires a valid convex polygon; collinear consecutive vertices may cause
+// issues when the first 3 vertices are collinear.
 bool pointInConvexPolygon(const vector<pt>& poly, pt q, bool strict = true) {
     int n = poly.size();
     if (n == 0) return false;
@@ -197,15 +190,19 @@ bool pointInConvexPolygon(const vector<pt>& poly, pt q, bool strict = true) {
     }
     return true;
 }
-
-// Minkowski Sum of two Convex Polygons in O(N + M)
+// Minkowski sum of two convex polygons in O(N + M).
+// Input: P and Q are convex polygons in CCW order.
+//        Vertices must be cyclically ordered with no consecutive
+//        collinear edges. Both polygons may have different starting points.
+// Output: convex polygon representing P + Q, in CCW order.
+// Direction: CCW is REQUIRED.
+// Note: P/Q must contain at least 3 vertices.
 vector<pt> minkowski(vector<pt> P, vector<pt> Q) {
     reorderConvex(P);
     reorderConvex(Q);
     int n = P.size(), m = Q.size();
     P.push_back(P[0]); P.push_back(P[1]); // Padding to avoid modulo bounds
     Q.push_back(Q[0]); Q.push_back(Q[1]);
-    
     vector<pt> res;
     int i = 0, j = 0;
     while (i < n || j < m) {
@@ -217,14 +214,10 @@ vector<pt> minkowski(vector<pt> P, vector<pt> Q) {
     return res;
 }
 
-/**
- * Calculates the diameter of a convex polygon (maximum distance between any two vertices).
- * Input:  A vector of 2D points 'poly' representing a convex polygon. The vertices 
- *         must be in cyclic order, but it can be either clockwise (CW) or 
- *         counter-clockwise (CCW).
- * Output: A pair containing a nested pair of the two farthest points, 
- *         and the distance (diameter) between them: {{pt1, pt2}, distance}.
- */
+// Convex polygon diameter using rotating calipers, O(N).
+// Input: convex polygon vertices in cyclic order (CW or CCW).
+// Output: {two farthest vertices, maximum Euclidean distance}.
+// Requires: n >= 3 and no consecutive collinear vertices.
 pair<pair<pt, pt>, T> convexDiameter(const vector<pt>& poly) {
     int n = poly.size();
     if (n < 2)
@@ -262,20 +255,14 @@ pair<pair<pt, pt>, T> convexDiameter(const vector<pt>& poly) {
     }
     return {ans, best};
 }
-
-// ==========================================
-// --- 7. HALF-PLANE INTERSECTION ---
-// ==========================================
 struct Halfplane {
     pt p, pq; T angle;
     Halfplane() {}
     Halfplane(pt a, pt b) : p(a), pq(b - a) {
         angle = atan2(imag(pq), real(pq));
     }
-    
     // Checks if point 'r' is strictly outside (to the right of) the half-plane
     bool out(pt r) const { return cross(pq, r - p) < -EPS; }
-
     bool operator<(const Halfplane& other) const {
         if (sgn(angle - other.angle) == 0) {
             // Resolve parallel planes: keep the one that is most restrictive (tightest)
@@ -283,13 +270,11 @@ struct Halfplane {
         }
         return angle < other.angle;
     }
-
     friend pt inter(const Halfplane& a, const Halfplane& b) {
         T A = cross(b.p - a.p, b.pq) / cross(a.pq, b.pq);
         return a.p + a.pq * A;
     }
 };
-
 vector<pt> hp_intersect(vector<Halfplane> H) {
     const T INF = 1e9;
     vector<pt> box = {{INF, INF}, {-INF, INF}, {-INF, -INF}, {INF, -INF}};
@@ -327,18 +312,12 @@ T maximum_dist_from_polygon_to_polygon_brute(vector<pt>& u, vector<pt>& v) {
     return sqrt(ans);
 }
 
-
-// ==========================================
-// --- 9. DYNAMIC CONVEX HULL ---
-// ==========================================
-
 struct cmp {
     bool operator()(const pt &a, const pt &b) const {
         if (sgn(a.x - b.x) != 0) return sgn(a.x - b.x) < 0;
         return sgn(a.y - b.y) < 0;
     }
 };
-
 struct upper_hull {
     set<pt, cmp> st;
     long long area2 = 0; // Maintains 2 * Area of the upper envelope
@@ -422,7 +401,6 @@ struct upper_hull {
         }
     }
 };
-
 struct DynamicHull {
     upper_hull upper, lower;
 
