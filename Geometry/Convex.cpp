@@ -463,9 +463,13 @@ struct DynamicHull {
 
 
 /**
- * Finds the indices of the two tangent vertices from a strictly exterior point to a convex polygon in O(log N) time using binary search.
- * polygon MUST be in strict Counter-Clockwise (CCW) 
- * Returns a pair of integers {right_tangent_index, left_tangent_index} representing the indices of the extreme right and left tangent vertices as viewed from 'q'.
+ * Finds the two tangent vertices from an exterior point q to a
+ * strictly convex polygon in O(log N).
+ * Input:
+ *   - poly: strictly convex polygon in CCW order.
+ *   - q: point strictly outside the polygon.
+ * Output:
+ *   {right_tangent_index, left_tangent_index}.
  */
 pair<int, int> tangentsFromExteriorPoint(const vector<pt>& poly, pt q) {
     int n = poly.size();
