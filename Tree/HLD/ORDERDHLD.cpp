@@ -199,4 +199,42 @@ struct HLD {
         // Final chronological merge: Path from 'u' UP to LCA, then DOWN to 'v'
         return down.merge(left, right);
     }
+    int query_path2(int u, int v) {
+        vector<pair<int, int>> left_intervals;
+        vector<pair<int, int>> right_intervals;
+
+        int x = u, y = v;
+        while (head[x] != head[y]) {
+            if (depth[head[x]] > depth[head[y]]) {
+                int l = N - 1 - pos[x];
+                int r = N - 1 - pos[head[x]];
+                left_intervals.push_back({l, r});
+                x = par[head[x]];
+            } else {
+                int l = pos[head[y]];
+                int r = pos[y];
+                right_intervals.push_back({l, r});
+                y = par[head[y]];
+            }
+        }
+        if (depth[x] > depth[y]) {
+            int l = N - 1 - pos[x];
+            int r = N - 1 - pos[y];
+            left_intervals.push_back({l, r});
+        } else {
+            int l = pos[x];
+            int r = pos[y];
+            right_intervals.push_back({l, r});
+        }
+        int mx = -2e18;
+        int ans = 0;
+        for (auto p : left_intervals) {
+            ans += up.get(p.first, p.second + 1, mx);
+        }
+        reverse(right_intervals.begin(), right_intervals.end());
+        for (auto p : right_intervals) {
+            ans += down.get(p.first, p.second + 1, mx);
+        }
+        return ans;
+    }
 };
